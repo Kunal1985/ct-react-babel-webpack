@@ -1,5 +1,5 @@
 import rp from 'request-promise';
-
+import configData from '../config'
 const API_BASE_URL = "https://api.commercetools.co/sampletest-8";
 
 let serializeObject = function (obj) {
@@ -76,7 +76,7 @@ let invokeAuthAPI = function () {
     method: "POST",
     url: "https://auth.commercetools.co/oauth/token",
     headers: {
-      'Authorization': 'Basic SmVzMTJsc1pDTkNrQ1R4S0NUNEdYQ1BrOnVRU0F5blRuY1cyeUxMYVVSY3ZQRjgyLTIzVEx3WU5I',
+      'Authorization': configData().ctAuthToken,
       'Content-type': 'application/x-www-form-urlencoded'
     },
     json: true,
