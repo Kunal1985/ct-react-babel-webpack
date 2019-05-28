@@ -12,7 +12,7 @@ import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 
 import rp from 'request-promise';
-import { getAuthToken, createCart, getCurrCartId, setCurrCartId, setCurrCartVersion, getCurrCartVersion, addItemToCart } from '../../utils/CommonUtils';
+import { getAuthToken, createCart, getCurrCartId, setCurrCartId, setCurrCartVersion, getCurrCartVersion, addItemToCart, fetchProducts } from '../../utils/CommonUtils';
 
 const styles = theme => ({
   appBar: {
@@ -71,44 +71,43 @@ class Home extends React.Component {
   }
 
   componentDidMount(){
-    let thisVar = this;
-    let options = {
-      method : "GET",
-      url : "https://api.commercetools.co/sampletest-8/products",
-      headers: {
-        'Authorization': 'Bearer ' + getAuthToken(),
-        'Content-type': 'application/json'
-      },
-      json : true
-    }
-    rp(options)
-      .then(function (body) {
-          var products = body.results;
-          var skuList = [];
-          for(var i=0; i<products.length; i++){
-              var currProduct = products[i];
-              var currentData = currProduct.masterData.current;
-              currentData.masterVariant.displayName = currentData.name.en;
-              skuList.push(currentData.masterVariant);
-              var currVariants = currentData.variants;
-              currVariants.map(function(currVariant){
-                  currVariant.displayName = currentData.name.en; 
-              });
-              skuList = skuList.concat(currVariants);
-              skuList.map(function(currSku){
-                  currSku.productId = currProduct.id;
-                  currSku.retailPrice = currSku.prices[0].value.centAmount/100;
-                  currSku.discountedPrice = currSku.prices[0].discounted ? currSku.prices[0].discounted.value.centAmount/100 : 0;
-                  currSku.image = currSku.images && currSku.images[0] ? currSku.images[0].url : "assets/img/no-image.jpg";
-              })
-          }
-          thisVar.setState({
-            productList: skuList
+    this.fetchProductList();
+  }
+  
+  async fetchProductList(){    
+    let response = await fetchProducts();
+    if(response.body){
+      var products = response.body.results;
+      var skuList = [];
+      for(var i=0; i<products.length; i++){
+          var currProduct = products[i];
+          var currentData = currProduct.masterData.current;
+          currentData.masterVariant.displayName = currentData.name.en;
+          skuList.push(currentData.masterVariant);
+          var currVariants = currentData.variants;
+          currVariants.map(function(currVariant){
+              currVariant.displayName = currentData.name.en; 
+          });
+          skuList = skuList.concat(currVariants);
+          skuList.map(function(currSku){
+              currSku.productId = currProduct.id;
+              currSku.retailPrice = currSku.prices[0].value.centAmount/100;
+              currSku.discountedPrice = currSku.prices[0].discounted ? currSku.prices[0].discounted.value.centAmount/100 : 0;
+              currSku.image = currSku.images && currSku.images[0] ? currSku.images[0].url : "assets/img/no-image.jpg";
           })
+      }
+      this.setState({
+        productList: skuList
       })
-      .catch(function (err) {
-        console.log("ProductFetch Error Response", err);
-      });
+    }
+    if(response.err){
+      console.log(response.err);
+      if(response.err.error.error === "invalid_token"){
+        this.fetchProductList();
+      } else{
+        // Display some error pop-up.
+      }
+    }
   }
 
   async addToCart(currSku){

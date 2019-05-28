@@ -6,10 +6,13 @@ import CardHeader from "components/Card/CardHeader.jsx";
 import CardBody from "components/Card/CardBody.jsx";
 import CardActions from '@material-ui/core/CardActions';
 import Button from '@material-ui/core/Button';
-import GridItem from "components/Grid/GridItem.jsx";
-import GridContainer from "components/Grid/GridContainer.jsx";
-import Typography from '@material-ui/core/Typography';
 import ButtonBase from '@material-ui/core/ButtonBase';
+import Typography from '@material-ui/core/Typography';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
 import withStyles from '@material-ui/core/styles/withStyles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 
@@ -100,12 +103,13 @@ class ShoppingCart extends React.Component {
     let subTotal = 0;
     let taxAmount = 0;
     let currCartId = getCurrCartId();
-    if (this.state && this.state.currCart) {
-      grossTotal = this.state.currCart.taxedPrice ? this.state.currCart.taxedPrice.totalGross.centAmount / 100 : this.state.currCart.totalPrice.centAmount / 100;
-      subTotal = this.state.currCart.taxedPrice ? this.state.currCart.taxedPrice.totalNet.centAmount / 100 : grossTotal;
+    let currCart = this.state && this.state.currCart;
+    if (currCart) {
+      grossTotal = currCart.taxedPrice ? currCart.taxedPrice.totalGross.centAmount / 100 : currCart.totalPrice.centAmount / 100;
+      subTotal = currCart.taxedPrice ? currCart.taxedPrice.totalNet.centAmount / 100 : grossTotal;
       taxAmount = grossTotal - subTotal;
     }
-    let emptyCart = this.state && this.state.currCart && this.state.currCart.lineItems && this.state.currCart.lineItems.length ===0;
+    let emptyCart = currCart && currCart.lineItems && currCart.lineItems.length === 0;
     return (
       <React.Fragment>
         <CssBaseline />
@@ -113,79 +117,92 @@ class ShoppingCart extends React.Component {
           <Card>
             <CardHeader color="primary">
               <h4 className={classes.cardTitleWhite}>Shopping Cart</h4>
-              <p className={classes.cardCategoryWhite}>Order# {this.state && this.state.currCart && this.state.currCart.id}</p>
+              <p className={classes.cardCategoryWhite}>Order# {this.state && currCart && currCart.id}</p>
             </CardHeader>
             <CardBody key={currCartId}>
-              {emptyCart && (
+              {emptyCart ? (
                 <Grid container spacing={24} key="emptyCart">
                   <Grid item>
                     <Typography gutterBottom variant="h6">There are no items in the cart!</Typography>
                   </Grid>
                 </Grid>
+              ) : (currCart && currCart.lineItems) ? (
+                <Paper className={classes.root}>
+                  <Table className={classes.table}>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell><Typography variant="subtitle1">Item</Typography></TableCell>
+                        <TableCell align="right"><Typography variant="subtitle1">Qty.</Typography></TableCell>
+                        <TableCell align="right"><Typography variant="subtitle1">Price</Typography></TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {currCart.lineItems.map(row => (
+                        <TableRow key={row.id}>
+                          <TableCell>
+                            <Grid container spacing={24} key={row.id}>
+                              <Grid item>
+                                <ButtonBase className={classes.image}>
+                                  <img className={classes.img} alt="complex" src="/assets/img/no-image.jpg" />
+                                </ButtonBase>
+                              </Grid>
+                              <Grid item xs container direction="column" spacing={16}>
+                                <Grid item xs>
+                                  <Typography gutterBottom variant="subtitle1">
+                                    {row.name.en}
+                                  </Typography>
+                                  <Typography color="textSecondary">ID: {row.id}</Typography>
+                                </Grid>
+                                <Grid item>
+                                  <Typography style={{ cursor: 'pointer' }}>Remove</Typography>
+                                </Grid>
+                              </Grid>
+                            </Grid>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Typography variant="subtitle1">
+                              {row.quantity}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Typography variant="subtitle1">
+                              <NumberFormat value={row.totalPrice.centAmount / 100} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
+                            </Typography>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+
+                      <TableRow>
+                        <TableCell rowSpan={3} />
+                        <TableCell ><Typography variant="subtitle1">Subtotal</Typography></TableCell>
+                        <TableCell align="right">
+                          <Typography variant="subtitle1">
+                            <NumberFormat value={subTotal} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell><Typography variant="subtitle1">Tax</Typography></TableCell>
+                        <TableCell align="right">
+                          <Typography variant="subtitle1">
+                            <NumberFormat value={taxAmount} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell ><Typography variant="subtitle1">Total</Typography></TableCell>
+                        <TableCell align="right">
+                          <Typography variant="subtitle1">
+                            <NumberFormat value={grossTotal} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </Paper>
+              ) : (
+                "May not enter this section!"
               )}
-              {this.state && this.state.currCart && this.state.currCart.lineItems && this.state.currCart.lineItems.map(currLineItem => (
-                <Grid container spacing={24} key={currLineItem.id}>
-                  <Grid item>
-                    <ButtonBase className={classes.image}>
-                      <img className={classes.img} alt="complex" src="/assets/img/no-image.jpg" />
-                    </ButtonBase>
-                  </Grid>
-                  <Grid item xs={12} sm container>
-                    <Grid item xs container direction="column" spacing={16}>
-                      <Grid item xs>
-                        <Typography gutterBottom variant="subtitle1">
-                          {currLineItem.name.en} ({currLineItem.quantity})
-                        </Typography>
-                        <Typography color="textSecondary">ID: {currLineItem.id}</Typography>
-                      </Grid>
-                      <Grid item>
-                        <Typography style={{ cursor: 'pointer' }}>Remove</Typography>
-                      </Grid>
-                    </Grid>
-                    <Grid item>
-                      <Typography variant="subtitle1">
-                        <NumberFormat value={currLineItem.totalPrice.centAmount / 100} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
-                      </Typography>
-                    </Grid>
-                  </Grid>
-                </Grid>
-              ))}
-              <Grid container spacing={24}>
-                <Grid item xs container spacing={16} alignContent='flex-end'>
-                  <Typography gutterBottom variant="subtitle1">
-                    Sub-Total
-                  </Typography>
-                </Grid>
-                <Grid item>
-                  <Typography gutterBottom variant="subtitle1">
-                    <NumberFormat value={subTotal} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
-                  </Typography>
-                </Grid>
-              </Grid>
-              <Grid container spacing={24}>
-                <Grid item xs container spacing={16} alignContent='flex-end'>
-                  <Typography gutterBottom variant="subtitle1">
-                    Tax
-                  </Typography>
-                </Grid>
-                <Grid item>
-                  <Typography gutterBottom variant="subtitle1">
-                    <NumberFormat value={taxAmount} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
-                  </Typography>
-                </Grid>
-              </Grid>
-              <Grid container spacing={24}>
-                <Grid item xs container spacing={16} alignContent='flex-end'>
-                  <Typography gutterBottom variant="h6">
-                    Total
-                  </Typography>
-                </Grid>
-                <Grid item>
-                  <Typography gutterBottom variant="h6">
-                    <NumberFormat value={grossTotal} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
-                  </Typography>
-                </Grid>
-              </Grid>
             </CardBody>
             <CardActions>
               <Button variant="contained" size="small" color="primary" className={classes.button} onClick={() => this.props.history.push('checkout')}>

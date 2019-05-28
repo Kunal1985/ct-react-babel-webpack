@@ -1,5 +1,7 @@
 import rp from 'request-promise';
 
+const API_BASE_URL = "https://api.commercetools.co/sampletest-8";
+
 let serializeObject = function (obj) {
   var str = [];
   for (var key in obj) {
@@ -98,7 +100,7 @@ let signIn = function (credentials) {
   }
   let options = {
     method: 'POST',
-    url: "https://api.commercetools.co/sampletest-8/login",
+    url: `${API_BASE_URL}/login`,
     headers: {
       'Authorization': 'Bearer ' + getAuthToken(),
       'Content-type': 'application/json'
@@ -122,10 +124,10 @@ let signIn = function (credentials) {
     });
 }
 
-let fetchCustomer = function(customerId) {
+let fetchCustomer = function (customerId) {
   let options = {
     method: "GET",
-    url: "https://api.commercetools.co/sampletest-8/customers/" + customerId,
+    url: `${API_BASE_URL}/customers/${customerId}`,
     headers: {
       'Authorization': 'Bearer ' + getAuthToken(),
       'Content-type': 'application/json'
@@ -143,10 +145,94 @@ let fetchCustomer = function(customerId) {
     });
 }
 
+let fetchCustomerOrders = function (customerId, queryParams) {
+  let customerParam = ["where", encodeURIComponent(`customerId="${customerId}"`)].join("=");
+  let queryParam = "";
+  if(queryParams){
+    let limitParam = ["limit", queryParams.limit].join("=");
+    let offsetParam = ["offset", queryParams.offset].join("=");
+    let sortParam = ["sort", encodeURIComponent(queryParams.sort)].join("=");
+    queryParam = [customerParam, limitParam, offsetParam, sortParam].join("&");
+  } else{
+    queryParam = customerParam
+  }
+  let apiUrl = `${API_BASE_URL}/orders?${queryParam}`;
+  let options = {
+    method: "GET",
+    url: apiUrl,
+    headers: {
+      'Authorization': 'Bearer ' + getAuthToken(),
+      'Content-type': 'application/json'
+    },
+    json: true
+  }
+  return rp(options)
+    .then(function (body) {
+      console.log("fetchCustomerOrders Success Response", body);
+      return { body };
+    })
+    .catch(function (err) {
+      console.log("fetchCustomerOrders Error Response", err);
+      return { err }
+    });
+}
+
+let fetchCustomerShoppingLists = function (customerId, queryParams) {
+  let customerParam = ["where", encodeURIComponent(`customer(id="${customerId}")`)].join("=");
+  let queryParam = "";
+  if(queryParams){
+    let limitParam = ["limit", queryParams.limit].join("=");
+    let offsetParam = ["offset", queryParams.offset].join("=");
+    let sortParam = ["sort", encodeURIComponent(queryParams.sort)].join("=");
+    queryParam = [customerParam, limitParam, offsetParam, sortParam].join("&");
+  } else{
+    queryParam = customerParam
+  }
+  let apiUrl = `${API_BASE_URL}/shopping-lists?${queryParam}`;
+  let options = {
+    method: "GET",
+    url: apiUrl,
+    headers: {
+      'Authorization': 'Bearer ' + getAuthToken(),
+      'Content-type': 'application/json'
+    },
+    json: true
+  }
+  return rp(options)
+    .then(function (body) {
+      console.log("fetchCustomerShoppingLists Success Response", body);
+      return { body };
+    })
+    .catch(function (err) {
+      console.log("fetchCustomerShoppingLists Error Response", err);
+      return { err }
+    });
+}
+
+let fetchProducts = function () {
+  let options = {
+    method: "GET",
+    url: `${API_BASE_URL}/products`,
+    headers: {
+      'Authorization': 'Bearer ' + getAuthToken(),
+      'Content-type': 'application/json'
+    },
+    json: true
+  }
+  return rp(options)
+    .then(function (body) {
+      return { body }
+    })
+    .catch(function (err) {
+      console.log("CartFetch Error Response", err);
+      return { err }
+    });
+}
+
 let fetchCart = function (cartId) {
   let options = {
     method: "GET",
-    url: "https://api.commercetools.co/sampletest-8/carts/" + cartId,
+    url: `${API_BASE_URL}/carts/${cartId}`,
     headers: {
       'Authorization': 'Bearer ' + getAuthToken(),
       'Content-type': 'application/json'
@@ -170,12 +256,12 @@ let createCart = function () {
   let createCartBody = {
     currency: "USD"
   }
-  if(currCustomerId){
+  if (currCustomerId) {
     createCartBody.customerId = currCustomerId;
   }
   let options = {
     method: "POST",
-    url: "https://api.commercetools.co/sampletest-8/carts",
+    url: `${API_BASE_URL}/carts`,
     headers: {
       "Authorization": "Bearer " + getAuthToken(),
       "Content-Type": "application/json"
@@ -198,7 +284,7 @@ let createCart = function () {
 let addItemToCart = function (currSku) {
   let options = {
     method: "POST",
-    url: "https://api.commercetools.co/sampletest-8/carts/" + getCurrCartId(),
+    url: `${API_BASE_URL}/carts/` + getCurrCartId(),
     headers: {
       "Authorization": "Bearer " + getAuthToken(),
       "Content-Type": "application/json"
@@ -228,7 +314,7 @@ let addItemToCart = function (currSku) {
 let addShippingToCart = function (shippingAddress) {
   let options = {
     method: "POST",
-    url: "https://api.commercetools.co/sampletest-8/carts/" + getCurrCartId(),
+    url: `${API_BASE_URL}/carts/` + getCurrCartId(),
     headers: {
       "Authorization": "Bearer " + getAuthToken(),
       "Content-Type": "application/json"
@@ -257,7 +343,7 @@ let addShippingToCart = function (shippingAddress) {
 let submitOrder = function () {
   let options = {
     method: "POST",
-    url: "https://api.commercetools.co/sampletest-8/orders/",
+    url: `${API_BASE_URL}/orders/`,
     headers: {
       "Authorization": "Bearer " + getAuthToken(),
       "Content-Type": "application/json"
@@ -265,7 +351,7 @@ let submitOrder = function () {
     json: true,
     body: {
       "id": getCurrCartId(),
-      "version":  getCurrCartVersion()
+      "version": getCurrCartVersion()
     }
   }
   return rp(options)
@@ -287,6 +373,7 @@ export {
   invokeAuthAPI,
   signIn,
   getAuthToken,
+  fetchProducts,
   fetchCart,
   createCart,
   addItemToCart,
@@ -302,5 +389,7 @@ export {
   getOrderNumber,
   setOrderNumber,
   removeCurrCartId,
-  removeCurrCartVersion
+  removeCurrCartVersion,
+  fetchCustomerOrders,
+  fetchCustomerShoppingLists
 };

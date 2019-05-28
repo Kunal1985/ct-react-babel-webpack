@@ -1,24 +1,45 @@
 import React from "react";
+import PropTypes from 'prop-types';
+import CssBaseline from '@material-ui/core/CssBaseline';
 // @material-ui/core components
 import withStyles from "@material-ui/core/styles/withStyles";
-import InputLabel from "@material-ui/core/InputLabel";
-import TextField from '@material-ui/core/TextField';
-import classNames from 'classnames';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import Typography from '@material-ui/core/Typography';
+import PersonIcon from '@material-ui/icons/Person';
+import ShopRounded from '@material-ui/icons/ShoppingCart';
+import ShoppingBasket from '@material-ui/icons/ShoppingBasket';
 // core components
-import GridItem from "components/Grid/GridItem.jsx";
-import GridContainer from "components/Grid/GridContainer.jsx";
-import CustomInput from "components/CustomInput/CustomInput.jsx";
-import Button from "components/CustomButtons/Button.jsx";
 import Card from "components/Card/Card.jsx";
 import CardHeader from "components/Card/CardHeader.jsx";
-import CardAvatar from "components/Card/CardAvatar.jsx";
 import CardBody from "components/Card/CardBody.jsx";
-import CardFooter from "components/Card/CardFooter.jsx";
 
-import avatar from "assets/img/faces/marc.jpg";
-import { getCurrCustomerId, fetchCustomer } from "../../utils/CommonUtils";
+import { getCurrCustomerId, fetchCustomer, fetchCustomerOrders, fetchCustomerShoppingLists } from "../../utils/CommonUtils";
+import ProfileTab from "./ProfileTab/ProfileTab.jsx";
+import MyOrdersTab from "./MyOrdersTab.jsx";
+import MyShoppingListsTab from "./MyShoppingListsTab.jsx";
 
-const styles = theme => ({
+function TabContainer(props) {
+  return (
+    <Typography component="div" style={{ padding: 8 * 3 }}>
+      {props.children}
+    </Typography>
+  );
+}
+
+TabContainer.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
+const styles = theme => ({  
+  root: {
+    flexGrow: 1,
+    width: '100%',
+    backgroundColor: theme.palette.background.paper,
+    padding: `${theme.spacing.unit * 2}px ${theme.spacing.unit * 4}px ${theme.spacing.unit * 3}px`,
+  },
   cardCategoryWhite: {
     color: "rgba(255,255,255,.62)",
     margin: "0",
@@ -35,33 +56,34 @@ const styles = theme => ({
     marginBottom: "3px",
     textDecoration: "none"
   },
-  textField: {
-    marginLeft: theme.spacing.unit,
-    marginRight: theme.spacing.unit,
-    width: 200,
+  paper: {
+    marginTop: theme.spacing.unit * 8,
+    width: '100%',
+    padding: `${theme.spacing.unit * 2}px ${theme.spacing.unit * 3}px ${theme.spacing.unit * 3}px`,
   },
-  email: {
-    width: 300
-  },
-  addressField: {
-    width: 400
+  toolbarTitle: {
+    marginRight: theme.spacing.unit * 8,
   }
 });
 
 class UserProfile extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
-    this.toggleUpdate = this.toggleUpdate.bind(this);
+    this.state = { value: 0 };
+    this.handleChange = this.handleChange.bind(this);
   }
 
-  async componentDidMount(){
-    let currUser = getCurrCustomerId();
-    if(!currUser){
+  async componentDidMount(){    
+    let currUserId = getCurrCustomerId();
+    if(!currUserId){
       this.props.history.push("/login");
       return;
     }
-    let response = await fetchCustomer(currUser);
+    this.fetchCustomerDetails(currUserId);
+  }
+
+  async fetchCustomerDetails(userId){
+    let response = await fetchCustomer(userId);
     if(response.body){
       this.setState({
         currUser: response.body,
@@ -73,219 +95,45 @@ class UserProfile extends React.Component {
     }
   }
 
-  toggleUpdate(){
-    let currUpdateStatus = this.state.udpateProfile;
+  handleChange(event, newValue) {
     this.setState({
-      udpateProfile: !currUpdateStatus
-    })
+      value: newValue
+    });
   }
-  
-  render(){
+
+  render() {
     const { classes } = this.props;
-    let defaultAddress = this.state && this.state.currUser && this.state.currUser.addresses && this.state.currUser.addresses[0] ? this.state.currUser.addresses[0] : "No Address registered!";
-    if(defaultAddress){
-      let street = [defaultAddress.streetNumber, defaultAddress.streetName].join(" ");
-      let cityRegion = [defaultAddress.city, defaultAddress.region].join(" ");
-      let postalCountry = [defaultAddress.country, defaultAddress.postalCode].join(" ");
-      defaultAddress = [street, cityRegion, postalCountry].join("\n");
-    }
+    let value = this.state && this.state.value;
+    let currUser = this.state.currUser;
+    let userFullName = currUser ? [currUser.firstName, currUser.lastName].join(" ") : "";
+    let currUserId = currUser ? currUser.id : "";
     return (
-      <div>
-        <GridContainer>
-          <GridItem xs={12} sm={12} md={8}>
-            {this.state.currUser && !this.state.udpateProfile ? (
-              <Card>
-                <CardHeader color="primary">
-                  <h4 className={classes.cardTitleWhite}>{this.state.currUser.firstName} {this.state.currUser.lastName}</h4>
-                  <p className={classes.cardCategoryWhite}>Profile# {this.state.currUser.id}</p>
-                </CardHeader>
-                <CardBody>
-                  <GridContainer>
-                    <GridItem xs={12} sm={12} md={12}>
-                      <TextField
-                        id="standard-name"
-                        label="Email ddress"
-                        className={classNames(classes.textField, classes.email)}
-                        value={this.state.currUser.email}
-                        margin="normal"
-                      />
-                    </GridItem>
-                  </GridContainer>
-                  <GridContainer>
-                    <GridItem xs={12} sm={12} md={6}>
-                      <TextField
-                        id="standard-name"
-                        label="First Name"
-                        className={classes.textField}
-                        value={this.state.currUser.firstName}
-                        margin="normal"
-                      />
-                    </GridItem>
-                    <GridItem xs={12} sm={12} md={6}>
-                      <TextField
-                        id="standard-name"
-                        label="First Name"
-                        className={classes.textField}
-                        value={this.state.currUser.lastName}
-                        margin="normal"
-                      />
-                    </GridItem>
-                  </GridContainer>
-                  <GridContainer>
-                    <GridItem xs={12} sm={12} md={4}>
-                      <TextField
-                        id="outlined-multiline-static"
-                        label="Address"
-                        multiline
-                        rows="4"
-                        value={defaultAddress}
-                        className={classNames(classes.textField, classes.addressField)}
-                        margin="normal"
-                        variant="outlined"
-                      />
-                    </GridItem>
-                  </GridContainer>
-                </CardBody>
-                <CardFooter>
-                  <Button color="primary" onClick={this.toggleUpdate}>Update Profile</Button>
-                </CardFooter>
-              </Card>
-            ): (
-              <Card>
-              <CardHeader color="primary">
-                <h4 className={classes.cardTitleWhite}>Edit Profile</h4>
-                <p className={classes.cardCategoryWhite}>Complete your profile</p>
-              </CardHeader>
+      <div className={classes.root}>
+        <React.Fragment>
+          <CssBaseline />
+            <Card >
+              <AppBar position="static">
+                <Toolbar>
+                  <div className={classes.toolbarTitle}>
+                    <h4 className={classes.cardTitleWhite}>{userFullName}</h4>
+                    <p className={classes.cardCategoryWhite}>Profile# {currUserId}</p>
+                  </div>
+                  <Tabs value={value} onChange={this.handleChange} 
+                    indicatorColor="secondary"
+                    >
+                    <Tab label="Profile" icon={<PersonIcon />} />
+                    <Tab label="Orders" icon={<ShopRounded />} />
+                    <Tab label="Wish List" icon={<ShoppingBasket />} />
+                  </Tabs>
+                </Toolbar>
+              </AppBar>
               <CardBody>
-                <GridContainer>
-                  <GridItem xs={12} sm={12} md={5}>
-                    <CustomInput
-                      labelText="Company (disabled)"
-                      id="company-disabled"
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                      inputProps={{
-                        disabled: true
-                      }}
-                    />
-                  </GridItem>
-                  <GridItem xs={12} sm={12} md={3}>
-                    <CustomInput
-                      labelText="Username"
-                      id="username"
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                    />
-                  </GridItem>
-                  <GridItem xs={12} sm={12} md={4}>
-                    <CustomInput
-                      labelText="Email address"
-                      id="email-address"
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                    />
-                  </GridItem>
-                </GridContainer>
-                <GridContainer>
-                  <GridItem xs={12} sm={12} md={6}>
-                    <CustomInput
-                      labelText="First Name"
-                      id="first-name"
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                    />
-                  </GridItem>
-                  <GridItem xs={12} sm={12} md={6}>
-                    <CustomInput
-                      labelText="Last Name"
-                      id="last-name"
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                    />
-                  </GridItem>
-                </GridContainer>
-                <GridContainer>
-                  <GridItem xs={12} sm={12} md={4}>
-                    <CustomInput
-                      labelText="City"
-                      id="city"
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                    />
-                  </GridItem>
-                  <GridItem xs={12} sm={12} md={4}>
-                    <CustomInput
-                      labelText="Country"
-                      id="country"
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                      inputProps={{
-                        value: "US"
-                      }}
-                    />
-                  </GridItem>
-                  <GridItem xs={12} sm={12} md={4}>
-                    <CustomInput
-                      labelText="Postal Code"
-                      id="postal-code"
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                    />
-                  </GridItem>
-                </GridContainer>
-                <GridContainer>
-                  <GridItem xs={12} sm={12} md={12}>
-                    <InputLabel style={{ color: "#AAAAAA" }}>About me</InputLabel>
-                    <CustomInput
-                      labelText="Lamborghini Mercy, Your chick she so thirsty, I'm in that two seat Lambo."
-                      id="about-me"
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                      inputProps={{
-                        multiline: true,
-                        rows: 5
-                      }}
-                    />
-                  </GridItem>
-                </GridContainer>
-              </CardBody>
-              <CardFooter>
-                <Button color="primary" onClick={this.toggleUpdate}>Save Profile</Button>
-              </CardFooter>
-            </Card>
-            )}            
-          </GridItem>
-          <GridItem xs={12} sm={12} md={4}>
-            <Card profile>
-              <CardAvatar profile>
-                <a href="#pablo" onClick={e => e.preventDefault()}>
-                  <img src={avatar} alt="..." />
-                </a>
-              </CardAvatar>
-              <CardBody profile>
-                <h6 className={classes.cardCategory}>CEO / CO-FOUNDER</h6>
-                <h4 className={classes.cardTitle}>Alec Thompson</h4>
-                <p className={classes.description}>
-                  Don't be scared of the truth because we need to restart the
-                  human foundation in truth And I love you like Kanye loves Kanye
-                  I love Rick Owens’ bed design but the back is...
-                </p>
-                <Button color="primary" round>
-                  Follow
-                </Button>
+                  {value === 0 && <ProfileTab parent={this} currUser={currUser}/>}
+                  {value === 1 && <MyOrdersTab parent={this} currUser={currUserId}/>}
+                  {value === 2 && <MyShoppingListsTab parent={this} currUser={currUserId}/>}
               </CardBody>
             </Card>
-          </GridItem>
-        </GridContainer>
+        </React.Fragment>          
       </div>
     );
   }

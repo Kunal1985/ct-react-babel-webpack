@@ -15,7 +15,9 @@ module.exports = {
     modules: [path.resolve(__dirname, 'src'), 'node_modules']
   },
   devServer: {
-    contentBase: path.join(__dirname,'src')
+    contentBase: path.join(__dirname,'src'),
+	host:'0.0.0.0',
+	port:5001
   },
   module: {
     rules: [
