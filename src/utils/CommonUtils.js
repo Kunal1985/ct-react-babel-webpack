@@ -145,6 +145,29 @@ let fetchCustomer = function (customerId) {
     });
 }
 
+let updateCustomer = function (requestBody) {
+  let customerId = getCurrCustomerId();
+  let options = {
+    method: "POST",
+    url: `${API_BASE_URL}/customers/${customerId}`,
+    headers: {
+      'Authorization': 'Bearer ' + getAuthToken(),
+      'Content-type': 'application/json'
+    },
+    body: requestBody,
+    json: true
+  }
+  return rp(options)
+    .then(function (body) {
+      console.log(`updateCustomer Success Response`, requestBody, body);
+      return { body };
+    })
+    .catch(function (err) {
+      console.log(`updateCustomer Error Response`, requestBody, err);
+      return { err }
+    });
+}
+
 let fetchCustomerOrders = function (customerId, queryParams) {
   let customerParam = ["where", encodeURIComponent(`customerId="${customerId}"`)].join("=");
   let queryParam = "";
@@ -224,7 +247,71 @@ let fetchProducts = function () {
       return { body }
     })
     .catch(function (err) {
-      console.log("CartFetch Error Response", err);
+      console.log("fetchProducts Error Response", err);
+      return { err }
+    });
+}
+
+let fetchProductProjections = function (filterQuery) {
+  let apiUrl = `${API_BASE_URL}/product-projections/search?facet=variants.attributes.color&facet=variants.attributes.size&facet=categories.id`;
+  if(filterQuery){    
+    apiUrl = [apiUrl, filterQuery].join("");
+  }
+  let options = {
+    method: "GET",
+    url: apiUrl,
+    headers: {
+      'Authorization': 'Bearer ' + getAuthToken(),
+      'Content-type': 'application/json'
+    },
+    json: true
+  }
+  return rp(options)
+    .then(function (body) {
+      return { body }
+    })
+    .catch(function (err) {
+      console.log("fetchProductProjections Error Response", err);
+      return { err }
+    });
+}
+
+let fetchProductById = function (productId) {
+  let options = {
+    method: "GET",
+    url: `${API_BASE_URL}/products/${productId}`,
+    headers: {
+      'Authorization': 'Bearer ' + getAuthToken(),
+      'Content-type': 'application/json'
+    },
+    json: true
+  }
+  return rp(options)
+    .then(function (body) {
+      return { body }
+    })
+    .catch(function (err) {
+      console.log("fetchCategories Error Response", err);
+      return { err }
+    });
+}
+
+let fetchCategories = function () {
+  let options = {
+    method: "GET",
+    url: `${API_BASE_URL}/categories?sort=parent.id%20asc`,
+    headers: {
+      'Authorization': 'Bearer ' + getAuthToken(),
+      'Content-type': 'application/json'
+    },
+    json: true
+  }
+  return rp(options)
+    .then(function (body) {
+      return { body }
+    })
+    .catch(function (err) {
+      console.log("fetchCategories Error Response", err);
       return { err }
     });
 }
@@ -272,6 +359,7 @@ let createCart = function () {
   return rp(options)
     .then(function (body) {
       console.log("createCart Success Response", body);
+      setCurrCartId(body.id);
       setCurrCartVersion(body.version);
       return { body };
     })
@@ -374,6 +462,9 @@ export {
   signIn,
   getAuthToken,
   fetchProducts,
+  fetchProductProjections,
+  fetchProductById,
+  fetchCategories,
   fetchCart,
   createCart,
   addItemToCart,
@@ -391,5 +482,6 @@ export {
   removeCurrCartId,
   removeCurrCartVersion,
   fetchCustomerOrders,
-  fetchCustomerShoppingLists
+  fetchCustomerShoppingLists,
+  updateCustomer
 };

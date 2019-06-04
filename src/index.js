@@ -6,13 +6,13 @@ import { Router, Route, Switch } from "react-router-dom";
 import "assets/css/material-dashboard-react.css?v=1.5.0";
 
 import App from 'views/App/App.jsx'
-import Home from 'views/Home/Home.jsx'
 import Login from 'views/Login/Login.jsx'
 import UserProfile from 'views/UserProfile/UserProfile.jsx'
 import ShoppingCart from 'views/ShoppingCart/ShoppingCart.jsx'
 import Checkout from 'views/Checkout/Checkout.jsx'
-
-// import indexRoutes from "routes.js";
+import Catalog from 'views/Catalog/Catalog.jsx'
+import ProductDetails from 'views/ProductDetails/ProductDetails.jsx'
+import Home from 'views/Home/Home.jsx'
 
 const hist = createHashHistory();
 
@@ -21,6 +21,8 @@ ReactDOM.render(
     <App>
       <Switch>
         <Route exact path="/" component={Home} />
+        <Route path="/catalog" component={Catalog} />
+        <Route path="/product/:productId" component={ProductDetails} />
         <Route path="/login" component={Login} />
         <Route path="/user" component={UserProfile} />
         <Route path="/cart" component={ShoppingCart} />

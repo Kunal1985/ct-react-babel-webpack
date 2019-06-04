@@ -81,7 +81,7 @@ class ProfileTab extends React.Component {
           <GridItem xs={12} sm={12} md={12}>
             {currUser && !this.state.udpateProfile ? (
               <div>
-                <ProfileTabView currUser={currUser}/>
+                <ProfileTabView currUser={currUser} parent={this}/>
                 <Button color="primary" onClick={this.toggleUpdate}>Update Profile</Button>
               </div>
             ): (

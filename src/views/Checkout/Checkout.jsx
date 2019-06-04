@@ -144,6 +144,9 @@ class Checkout extends React.Component {
                     Your order number is #<span>{currOrderNumber}</span>. We have emailed your order confirmation, and will
                     send you an update when your order has shipped.
                   </Typography>
+                  <Button onClick={() => this.props.history.push("/")} variant="contained" size="small" color="primary">
+                    Continue Shopping
+                  </Button>
                 </React.Fragment>
               ) : (
                 <React.Fragment>

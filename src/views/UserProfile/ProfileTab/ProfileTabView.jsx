@@ -1,20 +1,23 @@
 import React from "react";
+import classNames from 'classnames';
 // @material-ui/core components
 import withStyles from "@material-ui/core/styles/withStyles";
 import TextField from '@material-ui/core/TextField';
-import classNames from 'classnames';
+import Fab from '@material-ui/core/Fab';
+import AddIcon from '@material-ui/icons/Add';
+import Typography from '@material-ui/core/Typography';
+import CardContent from '@material-ui/core/CardContent';
+import Modal from '@material-ui/core/Modal';
 // core components
 import GridItem from "components/Grid/GridItem.jsx";
 import GridContainer from "components/Grid/GridContainer.jsx";
-import Button from "components/CustomButtons/Button.jsx";
 import Card from "components/Card/Card.jsx";
-import CardHeader from "components/Card/CardHeader.jsx";
 import CardAvatar from "components/Card/CardAvatar.jsx";
 import CardBody from "components/Card/CardBody.jsx";
-import CardFooter from "components/Card/CardFooter.jsx";
 
 import avatar from "assets/img/profile-pic.jpg";
-import { getCurrCustomerId, fetchCustomer } from "../../../utils/CommonUtils";
+import AddressSection from "./AddressSection/AddressSection.jsx";
+import AddressSectionEdit from "./AddressSection/AddressSectionEdit.jsx";
 
 const styles = theme => ({
   cardCategoryWhite: {
@@ -46,33 +49,48 @@ const styles = theme => ({
   },
   marginTopStyle: {
     marginTop: theme.spacing.unit * 10
+  },
+  marginTopStyle2: {
+    marginTop: theme.spacing.unit * 5
+  },
+  fabMargin: {
+    margin: theme.spacing.unit * 2
   }
 });
 
 class ProfileTabView extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {modalOpen: false};
+    this.handleOpen = this.handleOpen.bind(this);
+    this.handleClose = this.handleClose.bind(this);
+  }
+
+  handleOpen(){
+    this.setState({modalOpen: true});
+  }
+
+  handleClose(){
+    this.setState({modalOpen: false});
   }
 
   render() {
     const { classes } = this.props;
+    const { modalOpen } = this.state;
+    let thisVar = this;
     let currUser = this.props.currUser;
     let defaultAddress = currUser && currUser.addresses && currUser.addresses[0] ? currUser.addresses[0] : "No Address registered!";
-    if(defaultAddress){
-      let street = [defaultAddress.streetNumber, defaultAddress.streetName].join(" ");
-      let cityRegion = [defaultAddress.city, defaultAddress.region].join(" ");
-      let postalCountry = [defaultAddress.country, defaultAddress.postalCode].join(" ");
-      defaultAddress = [street, cityRegion, postalCountry].join("\n");
-    }
     return (
-      <Card profile className={classes.marginTopStyle}>
+      <Card className={classes.marginTopStyle}>
         <CardAvatar profile>
           <a href="#pablo" onClick={e => e.preventDefault()}>
             <img src={avatar} alt="..." />
           </a>
         </CardAvatar>
-        <CardBody profile>
+        <CardContent>
+          <Typography component="h1" variant="h5">
+            Personal Details
+          </Typography>
           <GridContainer>
             <GridItem xs={12} sm={12} md={12}>
               <TextField
@@ -104,21 +122,30 @@ class ProfileTabView extends React.Component {
               />
             </GridItem>
           </GridContainer>
+          <Typography component="h1" variant="h5" className={classes.marginTopStyle2}>
+            Addresses
+            <Fab color="primary" aria-label="Add" size="small" className={classes.fabMargin}>
+              <AddIcon onClick={this.handleOpen} />
+              <Modal
+                aria-labelledby="simple-modal-title"
+                aria-describedby="simple-modal-description"
+                open={modalOpen}
+                onClose={() => this.handleClose()}
+              >
+                <AddressSectionEdit currUser={currUser} parent={this} />
+              </Modal>
+            </Fab>
+          </Typography>
           <GridContainer>
-            <GridItem xs={12} sm={12} md={4}>
-              <TextField
-                id="outlined-multiline-static"
-                label="Address"
-                multiline
-                rows="4"
-                value={defaultAddress}
-                className={classNames(classes.textField, classes.addressField)}
-                margin="normal"
-                variant="outlined"
-              />
-            </GridItem>
+            {currUser && currUser.addresses && currUser.addresses.map(function(address){
+              return(
+                <GridItem xs={12} sm={12} md={6} key={address.id}>
+                  <AddressSection address={address} currUser={currUser} parent={thisVar}/>
+                </GridItem>
+              )
+            })}
           </GridContainer>
-        </CardBody>
+        </CardContent>
       </Card>      
     );
   }

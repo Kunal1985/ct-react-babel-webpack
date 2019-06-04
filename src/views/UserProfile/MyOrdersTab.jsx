@@ -186,7 +186,7 @@ class MyOrdersTab extends React.Component {
                         direction={order}
                         onClick={() => thisVar.handleRequestSort(event, row.id)}
                       >
-                        {row.label}
+                        <Typography variant="subtitle1">{row.label}</Typography>
                       </TableSortLabel>
                     </TableCell>
                   ))}
