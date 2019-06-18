@@ -4,10 +4,6 @@ import Paper from '@material-ui/core/Paper';
 import Card from 'components/Card/Card.jsx';
 import CardHeader from "components/Card/CardHeader.jsx";
 import CardBody from "components/Card/CardBody.jsx";
-import CardActions from '@material-ui/core/CardActions';
-import Button from '@material-ui/core/Button';
-import DeleteIcon from '@material-ui/icons/Delete';
-import IconButton from '@material-ui/core/IconButton';
 import ButtonBase from '@material-ui/core/ButtonBase';
 import Typography from '@material-ui/core/Typography';
 import Table from '@material-ui/core/Table';
@@ -19,25 +15,16 @@ import withStyles from '@material-ui/core/styles/withStyles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 
 import NumberFormat from 'react-number-format';
-import { getCurrCustomerId, getCurrCartId, getAuthToken, fetchCart, createCart, setCurrCartId, setCurrCartVersion, removeItemFromCart } from '../../utils/CommonUtils';
 
 const styles = theme => ({
-  layout: {
-    width: 'auto',
-    marginLeft: theme.spacing.unit * 2,
-    marginRight: theme.spacing.unit * 2,
-    [theme.breakpoints.up(600 + theme.spacing.unit * 2 * 2)]: {
-      width: 600,
-      marginLeft: 'auto',
-      marginRight: 'auto',
-    },
-  },
   paper: {
-    marginTop: theme.spacing.unit * 8,
+    margin: theme.spacing.unit * 8,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     padding: `${theme.spacing.unit * 2}px ${theme.spacing.unit * 3}px ${theme.spacing.unit * 3}px`,
+    overflow: "scroll",
+    height: 600
   },
   cardCategoryWhite: {
     color: "rgba(255,255,255,.62)",
@@ -65,91 +52,44 @@ const styles = theme => ({
     maxWidth: '100%',
     maxHeight: '100%',
   },
-  button: {
-    margin: theme.spacing.unit,
-    float: "right"
-  },
-  cardActionBtn: {
-    display: "block"
-  }
 });
 
-class ShoppingCart extends React.Component {
+class ShoppingCartView extends React.Component {
   constructor(props) {
     super(props);
     this.state = {};
-    this.fetchCurrentCart = this.fetchCurrentCart.bind(this);
-    this.removeItem = this.removeItem.bind(this);
-  }
-
-  componentDidMount() {
-    this.fetchCurrentCart();
-  }
-
-  async fetchCurrentCart() {
-    let currCartId = getCurrCartId();
-    if (!currCartId) {
-      let createCartResp = await createCart();
-      if (createCartResp.body) {
-        setCurrCartId(createCartResp.body.id);
-        setCurrCartVersion(createCartResp.body.version);
-        this.setState({ currCart: createCartResp.body });
-      }
-      if (createCartResp.err) {
-        // Display some error modal
-      }
-    } else {
-      let cartResponse = await fetchCart(getCurrCartId());
-      if (cartResponse.body) {
-        this.setState({ currCart: cartResponse.body });
-      }
-      if (cartResponse.err) {
-        // Display some error modal
-      }
-    }
-  }
-
-  async removeItem(itemId) {
-    let response = await removeItemFromCart(itemId);
-    if (response.body) {
-      this.fetchCurrentCart();
-    }
-    if (response.err) {
-      // Display some error popup
-    }
   }
 
   render() {
-    const { classes } = this.props;
+    const { classes, currOrder } = this.props;
     let thisVar = this;
     let grossTotal = 0;
     let subTotal = 0;
     let taxAmount = 0;
-    let currCartId = getCurrCartId();
-    let currCart = this.state && this.state.currCart;
-    if (currCart) {
-      grossTotal = currCart.taxedPrice ? currCart.taxedPrice.totalGross.centAmount / 100 : currCart.totalPrice.centAmount / 100;
-      subTotal = currCart.taxedPrice ? currCart.taxedPrice.totalNet.centAmount / 100 : grossTotal;
+    let currOrderId = currOrder.id;
+    if (currOrder) {
+      grossTotal = currOrder.taxedPrice ? currOrder.taxedPrice.totalGross.centAmount / 100 : currOrder.totalPrice.centAmount / 100;
+      subTotal = currOrder.taxedPrice ? currOrder.taxedPrice.totalNet.centAmount / 100 : grossTotal;
       taxAmount = grossTotal - subTotal;
     }
-    let emptyCart = currCart && currCart.lineItems && currCart.lineItems.length === 0;
+    let emptyCart = currOrder && currOrder.lineItems && currOrder.lineItems.length === 0;
     return (
       <React.Fragment>
         <CssBaseline />
         <Paper className={classes.paper}>
-          <Card>
+          <Card className={classes.card}>
             <CardHeader color="primary">
-              <h4 className={classes.cardTitleWhite}>Shopping Cart</h4>
-              <p className={classes.cardCategoryWhite}>Order# {this.state && currCart && currCart.id}</p>
+              <h4 className={classes.cardTitleWhite}>Your Order</h4>
+              <p className={classes.cardCategoryWhite}>Order# {currOrderId}</p>
             </CardHeader>
-            <CardBody key={currCartId}>
+            <CardBody key={currOrderId}>
               {emptyCart ? (
                 <Grid container spacing={24} key="emptyCart">
                   <Grid item>
                     <Typography gutterBottom variant="h6">There are no items in the cart!</Typography>
                   </Grid>
                 </Grid>
-              ) : (currCart && currCart.lineItems) ? (
+              ) : (currOrder && currOrder.lineItems) ? (
                 <Paper className={classes.root}>
                   <Table className={classes.table}>
                     <TableHead>
@@ -160,8 +100,8 @@ class ShoppingCart extends React.Component {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {currCart.lineItems.map(function (row) {
-                        let displayImage = row.variant.images && row.variant.images.length > 0 ? row.variant.images[0].url : "/assets/img/no-image.jpg"
+                      {currOrder.lineItems.map(function(row){
+                        let displayImage = row.variant.images && row.variant.images.length>0 ? row.variant.images[0].url : "/assets/img/no-image.jpg"
                         return (
                           <TableRow key={row.id}>
                             <TableCell>
@@ -191,17 +131,12 @@ class ShoppingCart extends React.Component {
                                 <NumberFormat value={row.totalPrice.centAmount / 100} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
                               </Typography>
                             </TableCell>
-                            <TableCell align="right">
-                              <IconButton aria-label="Delete" className={classes.margin} onClick={() => thisVar.removeItem(row.id)}>
-                                <DeleteIcon />
-                              </IconButton>
-                            </TableCell>
                           </TableRow>
                         )
                       })}
 
                       <TableRow>
-                        <TableCell rowSpan={3} colSpan={2} />
+                        <TableCell rowSpan={3} />
                         <TableCell ><Typography variant="subtitle1">Subtotal</Typography></TableCell>
                         <TableCell align="right">
                           <Typography variant="subtitle1">
@@ -229,16 +164,9 @@ class ShoppingCart extends React.Component {
                   </Table>
                 </Paper>
               ) : (
-                    "May not enter this section!"
-                  )}
+                "May not enter this section!"
+              )}
             </CardBody>
-            {!emptyCart &&
-              <CardActions className={classes.cardActionBtn}>
-                <Button variant="contained" size="small" color="primary" className={classes.button} onClick={() => this.props.history.push('checkout')}>
-                  Checkout
-                </Button>
-              </CardActions>
-            }
           </Card>
         </Paper>
       </React.Fragment >
@@ -246,4 +174,4 @@ class ShoppingCart extends React.Component {
   }
 }
 
-export default withStyles(styles)(ShoppingCart);
+export default withStyles(styles)(ShoppingCartView);

@@ -11,7 +11,7 @@ class PaymentForm extends React.Component {
       <React.Fragment>
         <Typography variant="h6" gutterBottom>
           Payment method
-              </Typography>
+        </Typography>
         <Grid container spacing={24}>
           <Grid item xs={12} md={6}>
             <TextField required id="cardName" label="Name on card" fullWidth />

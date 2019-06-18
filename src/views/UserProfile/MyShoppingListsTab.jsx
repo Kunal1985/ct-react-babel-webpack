@@ -13,7 +13,21 @@ import TableRow from '@material-ui/core/TableRow';
 import TableSortLabel from '@material-ui/core/TableSortLabel';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import { fetchCustomerShoppingLists } from '../../utils/CommonUtils';
+import Modal from '@material-ui/core/Modal';
+import Link from '@material-ui/core/Link';
+import Button from '@material-ui/core/Button';
+import IconButton from '@material-ui/core/IconButton';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+// @material-ui/icons components
+import DeleteIcon from '@material-ui/icons/Delete';
+// utils components
+import { fetchCustomerShoppingLists, removeList } from '../../utils/CommonUtils';
+// views components
+import ShoppingListView from '../modals/ShoppingListView.jsx';
 
 const styles = theme => ({
   root: {
@@ -60,10 +74,17 @@ class MyShoppingListsTab extends React.Component {
       selected: [],
       page: 0,
       rowsPerPage: 10,
-      myShoppingLists: []
+      myShoppingLists: [],
+      modalOpen: false,
+      openDialog: false
     };
     this.handleChangePage = this.handleChangePage.bind(this);
     this.handleChangeRowsPerPage = this.handleChangeRowsPerPage.bind(this);
+    this.handleOpenModal = this.handleOpenModal.bind(this);
+    this.handleCloseModal = this.handleCloseModal.bind(this);
+    this.handleRemoveList = this.handleRemoveList.bind(this);
+    this.handleDialogOpen = this.handleDialogOpen.bind(this);
+    this.handleDialogClose = this.handleDialogClose.bind(this);
   }
 
   async fetchShoppingLists(refetchParams){
@@ -113,6 +134,15 @@ class MyShoppingListsTab extends React.Component {
     this.handleRequestParams(newState);
   }
 
+  handleOpenModal(currOrder){
+    this.setState({modalOpen: true, listInModal: currOrder})
+  }
+
+  handleCloseModal(){
+    this.setState({modalOpen: false})
+  }
+
+
   handleRequestParams(newState){
     let currState = this.state;
     let order = newState.order ? newState.order : currState.order;
@@ -134,11 +164,42 @@ class MyShoppingListsTab extends React.Component {
     this.fetchShoppingLists(refetchParams);
   }
 
+  async handleRemoveList(){
+    let currState = this.state;
+    if(!currState || !currState.currListToDelete){
+      return;
+    }
+    let {listId, listVersion} = currState.currListToDelete;
+    let response = await removeList(listId, listVersion);
+    if(response.body){
+      this.setState({
+        openDialog: false
+      })
+      this.handleRequestParams({});
+    }
+    if(response.err){
+      // Display some error popup.
+    }
+  }
+
+  handleDialogOpen(listId, listVersion){
+    this.setState({
+      openDialog: true,
+      currListToDelete: {listId, listVersion}
+    })
+  }
+
+  handleDialogClose() {
+    this.setState({
+      openDialog: false
+    })
+  }
+
   render() {
     const thisVar = this;
     const { classes } = this.props;
     const emptyRows = 0;
-    let { order, orderBy, page, rowsPerPage, myShoppingLists } = this.state;
+    let { order, orderBy, page, rowsPerPage, myShoppingLists, modalOpen, listInModal, openDialog } = this.state;
     let rows = myShoppingLists && myShoppingLists.results ? myShoppingLists.results: [];
     return (
       <div className={classes.root}>
@@ -180,11 +241,18 @@ class MyShoppingListsTab extends React.Component {
                 {rows.map(row => {
                   return (
                     <TableRow hover key={row.id}>
-                      <TableCell component="th" scope="row">{row.id}</TableCell>
+                      <TableCell component="th" scope="row" >
+                        <Link component="button" variant="subtitle1" onClick={() => thisVar.handleOpenModal(row)}>{row.id}</Link>
+                      </TableCell>
                       <TableCell align="right">{row.name.en}</TableCell>
                       <TableCell align="right">{row.lineItems.length}</TableCell>
                       <TableCell align="right">{row.createdAt}</TableCell>
                       <TableCell align="right">{row.lastModifiedAt}</TableCell>
+                      <TableCell align="right">
+                        <IconButton aria-label="Delete" className={classes.margin} onClick={() => thisVar.handleDialogOpen(row.id, row.version)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </TableCell>
                     </TableRow>
                   );
                 })}
@@ -212,6 +280,38 @@ class MyShoppingListsTab extends React.Component {
             onChangeRowsPerPage={this.handleChangeRowsPerPage}
           />
         </Paper>
+
+        <Modal
+          aShoppingListView
+          aria-describedby="simple-modal-description"
+          open={modalOpen}
+          onClose={() => this.handleCloseModal()}
+        >
+          <ShoppingListView currList={listInModal} parent={this} />
+        </Modal>
+
+        <Dialog
+          open={openDialog}
+          onClose={this.handleDialogClose}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">Are you sure, you want to delete this Shopping-List?</DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              There might be items present in the Shopping-List you are trying to delete.
+              Performing this action will delete the Shopping-List from the database, there will be no backup for recovery!
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={this.handleDialogClose} variant="contained" color="primary">
+              Cancel
+            </Button>
+            <Button onClick={this.handleRemoveList} variant="contained" color="secondary" autoFocus>
+              Confirm
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }

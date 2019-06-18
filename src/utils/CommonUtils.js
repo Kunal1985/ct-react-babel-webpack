@@ -1,6 +1,6 @@
 import rp from 'request-promise';
 import configData from '../config'
-const API_BASE_URL = "https://api.commercetools.co/sampletest-8";
+const API_BASE_URL = "https://api.commercetools.co/ctatg";
 
 let serializeObject = function (obj) {
   var str = [];
@@ -31,12 +31,36 @@ let setAuthToken = function (authToken) {
   localStorage.setItem("currToken", authToken);
 }
 
+let getCurrListId = function () {
+  return localStorage.getItem("currListId");
+}
+
+let setCurrListId = function (listId) {
+  localStorage.setItem("currListId", listId);
+}
+
+let getCurrListVersion = function () {
+  return parseInt(localStorage.getItem("currListVersion"));
+}
+
+let setCurrListVersion = function (listVersion) {
+  localStorage.setItem("currListVersion", listVersion);
+}
+
 let getCurrCartId = function () {
   return localStorage.getItem("currCartId");
 }
 
 let setCurrCartId = function (cartId) {
   localStorage.setItem("currCartId", cartId);
+}
+
+let getCurrCartCustomer = function () {
+  return localStorage.getItem("currCartCustomer");
+}
+
+let setCurrCartCustomer = function (customerId) {
+  localStorage.setItem("currCartCustomer", customerId);
 }
 
 let removeCurrCartId = function () {
@@ -61,6 +85,10 @@ let getCurrCustomerId = function () {
 
 let setCurrCustomerId = function (customerId) {
   localStorage.setItem("currCustomerId", customerId);
+}
+
+let removeCurrCustomerId = function () {
+  localStorage.removeItem("currCustomerId");
 }
 
 let getOrderNumber = function () {
@@ -95,7 +123,9 @@ let invokeAuthAPI = function () {
 
 let signIn = function (credentials) {
   let currCartId = getCurrCartId();
-  if (currCartId) {
+  let currCustomerId = getCurrCustomerId();
+  let cartCustomer = getCurrCartCustomer();
+  if(!cartCustomer && currCartId) {
     credentials.anonymousCartId = currCartId;
   }
   let options = {
@@ -115,11 +145,47 @@ let signIn = function (credentials) {
       if (body.cart) {
         setCurrCartId(body.cart.id);
         setCurrCartVersion(body.cart.version);
+        setCurrCartCustomer(body.cart.customerId);
       }
       return { body }
     })
     .catch(function (err) {
       console.log("Login Error Response", err);
+      return { err }
+    });
+}
+
+let signUp = function (credentials) {
+  let currCartId = getCurrCartId();
+  let currCustomerId = getCurrCustomerId();
+  let cartCustomer = getCurrCartCustomer();
+  if(!cartCustomer && currCartId) {
+    credentials.anonymousCartId = currCartId;
+  }
+  console.log("signUp", credentials);
+  let options = {
+    method: 'POST',
+    url: `${API_BASE_URL}/customers`,
+    headers: {
+      'Authorization': 'Bearer ' + getAuthToken(),
+      'Content-type': 'application/json'
+    },
+    json: true,
+    body: credentials
+  }
+  return rp(options)
+    .then(function (body) {
+      console.log("CreateCustomer Success Response", body);
+      setCurrCustomerId(body.customer.id);
+      if (body.cart) {
+        setCurrCartId(body.cart.id);
+        setCurrCartVersion(body.cart.version);
+        setCurrCartCustomer(body.cart.customerId);
+      }
+      return { body }
+    })
+    .catch(function (err) {
+      console.log("CreateCustomer Error Response", err);
       return { err }
     });
 }
@@ -316,6 +382,144 @@ let fetchCategories = function () {
     });
 }
 
+let fetchList = function (listId) {
+  let options = {
+    method: "GET",
+    url: `${API_BASE_URL}/shopping-lists/${listId}`,
+    headers: {
+      'Authorization': 'Bearer ' + getAuthToken(),
+      'Content-type': 'application/json'
+    },
+    json: true
+  }
+  return rp(options)
+    .then(function (body) {
+      console.log("ListFetch Success Response", body);
+      return { body };
+    })
+    .catch(function (err) {
+      console.log("ListFetch Error Response", err);
+      return { err }
+    });
+}
+
+let createList = function (listName) {
+  let currCustomerId = getCurrCustomerId();
+  let requestBody = {
+    name: {
+      en: listName
+    }
+  }
+  if (currCustomerId) {
+    requestBody.customer = {
+      typeId: "customer",
+      id: currCustomerId
+    };
+  }
+  let options = {
+    method: "POST",
+    url: `${API_BASE_URL}/shopping-lists`,
+    headers: {
+      "Authorization": "Bearer " + getAuthToken(),
+      "Content-Type": "application/json"
+    },
+    json: true,
+    body: requestBody
+  }
+  return rp(options)
+    .then(function (body) {
+      console.log("CreateList Success Response", body);
+      setCurrListId(body.id);
+      setCurrListVersion(body.version);
+      return { body };
+    })
+    .catch(function (err) {
+      console.log("CreateList Error Response", err);
+      return { err };
+    });
+}
+
+let removeList = function (listId, listVersion) {
+  let options = {
+    method: "DELETE",
+    url: `${API_BASE_URL}/shopping-lists/${listId}?version=${listVersion}`,
+    headers: {
+      'Authorization': 'Bearer ' + getAuthToken(),
+      'Content-type': 'application/json'
+    },
+    json: true
+  }
+  return rp(options)
+    .then(function (body) {
+      console.log("RemoveList Success Response", body);
+      return { body };
+    })
+    .catch(function (err) {
+      console.log("RemoveList Error Response", err);
+      return { err }
+    });
+}
+
+let addItemToList = function (currSku) {
+  let options = {
+    method: "POST",
+    url: `${API_BASE_URL}/shopping-lists/` + getCurrListId(),
+    headers: {
+      "Authorization": "Bearer " + getAuthToken(),
+      "Content-Type": "application/json"
+    },
+    json: true,
+    body: {
+      "version": getCurrListVersion(),
+      "actions": [{
+        "action": "addLineItem",
+        "sku": currSku.sku,
+        "quantity": 1
+      }]
+    }
+  }
+  return rp(options)
+    .then(function (body) {
+      console.log("AddItemToList Success Response", body);
+      setCurrListVersion(body.version);
+      return { body };
+    })
+    .catch(function (err) {
+      console.log("AddItemToList Error Response", err);
+      return { err };
+    });
+}
+
+let removeItemFromList = function (shoppinglistId, shoppingLitVersion, lineItemId) {
+  let options = {
+    method: "POST",
+    url: `${API_BASE_URL}/shopping-lists/${shoppinglistId}`,
+    headers: {
+      "Authorization": "Bearer " + getAuthToken(),
+      "Content-Type": "application/json"
+    },
+    json: true,
+    body: {
+      "version": shoppingLitVersion,
+      "actions": [{
+        "action": "removeLineItem",
+        lineItemId
+      }]
+    }
+  }
+  return rp(options)
+    .then(function (body) {
+      console.log("RemoveItemFromList Success Response", body);
+      setCurrCartVersion(body.version);
+      setCurrCartCustomer(body.customerId);
+      return { body };
+    })
+    .catch(function (err) {
+      console.log("RemoveItemFromList Error Response", err);
+      return { err };
+    });
+}
+
 let fetchCart = function (cartId) {
   let options = {
     method: "GET",
@@ -330,6 +534,7 @@ let fetchCart = function (cartId) {
     .then(function (body) {
       console.log("CartFetch Success Response", body);
       setCurrCartVersion(body.version);
+      setCurrCartCustomer(body.customerId);
       return { body };
     })
     .catch(function (err) {
@@ -361,6 +566,7 @@ let createCart = function () {
       console.log("createCart Success Response", body);
       setCurrCartId(body.id);
       setCurrCartVersion(body.version);
+      setCurrCartCustomer(body.customerId);
       return { body };
     })
     .catch(function (err) {
@@ -391,6 +597,7 @@ let addItemToCart = function (currSku) {
     .then(function (body) {
       console.log("AddToCart Success Response", body);
       setCurrCartVersion(body.version);
+      setCurrCartCustomer(body.customerId);
       return { body };
     })
     .catch(function (err) {
@@ -398,6 +605,37 @@ let addItemToCart = function (currSku) {
       return { err };
     });
 }
+
+let removeItemFromCart = function (lineItemId) {
+  let options = {
+    method: "POST",
+    url: `${API_BASE_URL}/carts/` + getCurrCartId(),
+    headers: {
+      "Authorization": "Bearer " + getAuthToken(),
+      "Content-Type": "application/json"
+    },
+    json: true,
+    body: {
+      "version": getCurrCartVersion(),
+      "actions": [{
+        "action": "removeLineItem",
+        lineItemId
+      }]
+    }
+  }
+  return rp(options)
+    .then(function (body) {
+      console.log("RemoveItemFromCart Success Response", body);
+      setCurrCartVersion(body.version);
+      setCurrCartCustomer(body.customerId);
+      return { body };
+    })
+    .catch(function (err) {
+      console.log("RemoveItemFromCart Error Response", err);
+      return { err };
+    });
+}
+
 
 let addShippingToCart = function (shippingAddress) {
   let options = {
@@ -420,6 +658,7 @@ let addShippingToCart = function (shippingAddress) {
     .then(function (body) {
       console.log("addShippingToCart Success Response", body);
       setCurrCartVersion(body.version);
+      setCurrCartCustomer(body.customerId);
       return { body };
     })
     .catch(function (err) {
@@ -456,10 +695,22 @@ let submitOrder = function () {
     });
 }
 
+let getModalStyle = function(){
+  const top = 50;
+  const left = 50;
+
+  return {
+    top: `${top}%`,
+    left: `${left}%`,
+    transform: `translate(-${top}%, -${left}%)`,
+  };
+}
+
 export {
   serializeObject,
   invokeAuthAPI,
   signIn,
+  signUp,
   getAuthToken,
   fetchProducts,
   fetchProductProjections,
@@ -468,6 +719,7 @@ export {
   fetchCart,
   createCart,
   addItemToCart,
+  removeItemFromCart,
   addShippingToCart,
   getCurrCartId,
   fetchCustomer,
@@ -483,5 +735,18 @@ export {
   removeCurrCartVersion,
   fetchCustomerOrders,
   fetchCustomerShoppingLists,
-  updateCustomer
+  updateCustomer,
+  getModalStyle,
+  getCurrListId,
+  setCurrListId, 
+  createList,
+  addItemToList,
+  getCurrListVersion,
+  setCurrListVersion,
+  removeCurrCustomerId,
+  getCurrCartCustomer,
+  setCurrCartCustomer,
+  removeItemFromList,
+  fetchList,
+  removeList
 };

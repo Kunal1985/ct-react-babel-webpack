@@ -113,6 +113,10 @@ const styles = theme => ({
   icon: {
     color: 'rgba(255, 255, 255, 0.54)',
   },
+  bannerImg: {
+    width: "100%",
+    height: "auto",
+  }
 });
 
 class Home extends React.Component {
@@ -167,7 +171,7 @@ class Home extends React.Component {
 
   handleChange(event, newValue) {
     let categoryId = this.state.categories[newValue - 1].id;
-    this.props.history.push({ 
+    this.props.history.push({
       pathname: 'catalog',
       selectedCategory: categoryId
     })
@@ -193,9 +197,8 @@ class Home extends React.Component {
 
   render() {
     const { classes } = this.props;
-    let value = this.state.value;
+    let { value, anchorEl } = this.state;
     let open = this.state.open ? this.state.open : false;
-    let anchorEl = this.state.anchorEl;
     let categories = this.state.categories ? this.state.categories : [];
     let subCats = categories[value - 1] && categories[value - 1].subCats ? categories[value - 1].subCats : [];
     console.log(subCats);
@@ -218,8 +221,8 @@ class Home extends React.Component {
                   id={index === 0 ? "startTab" : ""}
                   key={category.id}
                   label={category.displayName}
-                  // onMouseEnter={this.mouseOverAction}
-                  // onMouseLeave={this.mouseOutAction}
+                // onMouseEnter={this.mouseOverAction}
+                // onMouseLeave={this.mouseOutAction}
                 />
               ))}
             </Tabs>
@@ -254,12 +257,12 @@ class Home extends React.Component {
           <GridList cellHeight={180} className={classes.gridList}>
             {tileData.map(tile => (
               <GridListTile key={tile.img} className={classes[tile.className]}>
-                <img src={tile.img} alt={tile.title} />
+                <img src={tile.img} alt={tile.title} className={classes.bannerImg}/>
                 <GridListTileBar
                   title={tile.title}
                   subtitle={<span>{tile.subtitle}</span>}
                   actionIcon={
-                    <Button variant="contained" size="small" color="primary" className={classes.button} 
+                    <Button variant="contained" size="small" color="primary" className={classes.button}
                       onClick={() => this.props.history.push({
                         pathname: 'catalog',
                         selectedCategory: tile.categoryId

@@ -11,6 +11,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Footer from 'views/Footer/Footer.jsx';
 
 import { invokeAuthAPI } from 'utils/CommonUtils.js'
+import { getCurrCustomerId, removeCurrCustomerId } from '../../utils/CommonUtils';
 
 const styles = theme => ({
   '@global': {
@@ -45,8 +46,9 @@ const styles = theme => ({
 class App extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = { currCustomerId: getCurrCustomerId() };
     this.redirectPage = this.redirectPage.bind(this);
+    this.handleLogout = this.handleLogout.bind(this);
   }
 
   redirectPage(redirectRoute) {
@@ -57,9 +59,17 @@ class App extends React.Component {
     invokeAuthAPI();
   }
 
+  handleLogout() {
+    removeCurrCustomerId();
+    this.setState({
+      currCustomerId: null
+    })
+    this.redirectPage('')
+  }
+
   render() {
-    const { classes } = this.props;
-    console.log(this.props.children);
+    const { classes, history } = this.props;
+    let currCustomerId = getCurrCustomerId();
     return (
       <React.Fragment>
         <CssBaseline />
@@ -72,10 +82,16 @@ class App extends React.Component {
             <Button>Features</Button>
             <Button>Enterprise</Button>
             <Button>Support</Button>
-            <Button color="primary" variant="outlined" onClick={() => this.redirectPage('cart')}>Cart</Button>
-            <Button color="primary" variant="outlined" onClick={() => this.redirectPage('login')}>
-              Login
-            </Button>
+            <Button onClick={() => this.redirectPage('cart')}>Cart</Button>
+            {currCustomerId ? (
+              <Button color="secondary" variant="contained" onClick={this.handleLogout}>
+                Logout
+              </Button>
+            ) : (
+                <Button color="primary" variant="contained" onClick={() => this.redirectPage('login')}>
+                  Login
+              </Button>
+              )}
           </Toolbar>
         </AppBar>
         <div className={classes.layout}>

@@ -13,7 +13,7 @@ import Typography from '@material-ui/core/Typography';
 import AddressForm from './AddressForm.jsx';
 import PaymentForm from './PaymentForm.jsx';
 import Review from './Review.jsx';
-import { getOrderNumber } from '../../utils/CommonUtils.js';
+import { getOrderNumber, getCurrCustomerId, fetchCustomer } from '../../utils/CommonUtils.js';
 
 const styles = theme => ({
   appBar: {
@@ -61,11 +61,12 @@ class Checkout extends React.Component {
 
   getStepContent(step) {
     console.log("getStepContent", step);
+    let { submitAddress, submitReview, currUser } = this.state;
     switch (step) {
       case 0:
-        return <AddressForm submit={this.state.submitAddress} parent={this}/>;
+        return <AddressForm submit={submitAddress} parent={this} currUser={currUser} />;
       case 1:
-        return <Review submit={this.state.submitReview} parent={this}/>;
+        return <Review submit={submitReview} parent={this} />;
       default:
         throw new Error('Unknown step');
     }
@@ -73,7 +74,7 @@ class Checkout extends React.Component {
 
   handleNext = () => {
     switch (this.state.activeStep) {
-      case 0:        
+      case 0:
         this.setState(state => ({
           submitAddress: true,
           submitReview: false
@@ -85,7 +86,7 @@ class Checkout extends React.Component {
           submitReview: true
         }));
         break;
-      default:        
+      default:
         this.setState(state => ({
           submitAddress: false,
           submitReview: false
@@ -114,11 +115,36 @@ class Checkout extends React.Component {
     });
   };
 
+  async componentDidMount() {
+    let currCustomerId = getCurrCustomerId();
+    if (!currCustomerId) {
+      this.props.history.push("login");
+    }
+    this.fetchCustomerDetails(currCustomerId);
+  }
+
+  async fetchCustomerDetails(userId) {
+    let response = await fetchCustomer(userId);
+    if (response.body) {
+      this.setState({
+        currUser: response.body
+      });
+    }
+    if (response.err) {
+      // Display some error modal
+    }
+  }
+
+  handleAddressSelect = (address) => {
+    console.log("handleAddressSelect", address.id);
+    this.setState({selectedAddress: address});
+  }
+
   render() {
     const { classes } = this.props;
-    const { activeStep } = this.state;
+    const { activeStep, currUser, selectedAddress } = this.state;
     let currOrderNumber = getOrderNumber();
-
+    let noAddress = (currUser && currUser.addresses && currUser.addresses.length === 0) ? true : false;
     return (
       <React.Fragment>
         <CssBaseline />
@@ -149,30 +175,41 @@ class Checkout extends React.Component {
                   </Button>
                 </React.Fragment>
               ) : (
-                <React.Fragment>
-                  {this.getStepContent(activeStep)}
-                  <div className={classes.buttons}>
-                    {activeStep !== 0 && (
-                      <Button onClick={this.handleBack} className={classes.button}>
-                        Back
+                  <React.Fragment>
+                    {this.getStepContent(activeStep)}
+                    <div className={classes.buttons}>
+                      {activeStep !== 0 && (
+                        <Button onClick={this.handleBack} className={classes.button}>
+                          Back
                       </Button>
-                    )}
-                    {activeStep === 0 && (
-                      <Button onClick={() => this.props.history.push('cart')} className={classes.button}>
-                        Back
+                      )}
+                      {activeStep === 0 && (
+                        <Button onClick={() => this.props.history.push('cart')} className={classes.button}>
+                          Back
                       </Button>
-                    )}
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={this.handleNext}
-                      className={classes.button}
-                    >
-                      {activeStep === steps.length - 1 ? 'Place order' : 'Next'}
-                    </Button>
-                  </div>
-                </React.Fragment>
-              )}
+                      )}
+                      {noAddress ? "" : selectedAddress ? (
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={this.handleNext}
+                          className={classes.button}
+                        >
+                          {activeStep === steps.length - 1 ? 'Place order' : 'Next'}
+                        </Button>
+                      ): (
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          disabled
+                          className={classes.button}
+                        >
+                          {activeStep === steps.length - 1 ? 'Place order' : 'Next'}
+                        </Button>
+                      )}
+                    </div>
+                  </React.Fragment>
+                )}
             </React.Fragment>
           </Paper>
         </main>

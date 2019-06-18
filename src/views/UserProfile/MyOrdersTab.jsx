@@ -13,10 +13,13 @@ import TableRow from '@material-ui/core/TableRow';
 import TableSortLabel from '@material-ui/core/TableSortLabel';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
+import Modal from '@material-ui/core/Modal';
+import Link from '@material-ui/core/Link';
 // Other components
 import NumberFormat from 'react-number-format';
 // Util components
 import { fetchCustomerOrders } from '../../utils/CommonUtils';
+import ShoppingCartView from '../modals/ShoppingCartView.jsx';
 
 const styles = theme => ({
   root: {
@@ -64,11 +67,14 @@ class MyOrdersTab extends React.Component {
       selected: [],
       page: 0,
       rowsPerPage: 10,
-      myOrders: []
+      myOrders: [],
+      modalOpen: false
     };
     this.handleChangePage = this.handleChangePage.bind(this);
     this.handleChangeRowsPerPage = this.handleChangeRowsPerPage.bind(this);
     this.handleRequestParams = this.handleRequestParams.bind(this);
+    this.handleOpenModal = this.handleOpenModal.bind(this);
+    this.handleCloseModal = this.handleCloseModal.bind(this);
   }
 
   async fetchOrders(refetchParams) {
@@ -149,11 +155,19 @@ class MyOrdersTab extends React.Component {
     this.fetchOrders(refetchParams);
   }
 
+  handleOpenModal(currOrder){
+    this.setState({modalOpen: true, orderInModal: currOrder})
+  }
+
+  handleCloseModal(){
+    this.setState({modalOpen: false})
+  }
+
   render() {
     const thisVar = this;
     const { classes } = this.props;
     const emptyRows = 0;
-    let { order, orderBy, page, rowsPerPage, myOrders } = this.state;
+    let { order, orderBy, page, rowsPerPage, myOrders, modalOpen, orderInModal } = this.state;
     let rows = myOrders && myOrders.results ? myOrders.results : [];
     let rowsLength = myOrders && myOrders.total ? myOrders.total : 0;
     return (
@@ -162,7 +176,7 @@ class MyOrdersTab extends React.Component {
           <Toolbar className={classes.toolbar.root}>
             <div className={classes.toolbar.title}>
               <Typography variant="h6" id="tableTitle">
-                My Shopping Lists
+                My Orders
               </Typography>
             </div>
           </Toolbar>
@@ -199,7 +213,9 @@ class MyOrdersTab extends React.Component {
                   let taxAmount = grossTotal - subTotal;
                   return (
                     <TableRow hover key={row.id}>
-                      <TableCell component="th" scope="row">{row.id}</TableCell>
+                      <TableCell component="th" scope="row" >
+                        <Link component="button" variant="subtitle1" onClick={() => thisVar.handleOpenModal(row)}>{row.id}</Link>
+                      </TableCell>
                       <TableCell align="right">{row.orderState}</TableCell>
                       <TableCell align="right">
                         <NumberFormat value={subTotal} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
@@ -238,6 +254,15 @@ class MyOrdersTab extends React.Component {
             onChangeRowsPerPage={this.handleChangeRowsPerPage}
           />
         </Paper>
+
+        <Modal
+          aria-labelledby="simple-modal-title"
+          aria-describedby="simple-modal-description"
+          open={modalOpen}
+          onClose={() => this.handleCloseModal()}
+        >
+          <ShoppingCartView currOrder={orderInModal} />
+        </Modal>
       </div>
     );
   }

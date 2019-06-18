@@ -8,6 +8,7 @@ import AddIcon from '@material-ui/icons/Add';
 import Typography from '@material-ui/core/Typography';
 import CardContent from '@material-ui/core/CardContent';
 import Modal from '@material-ui/core/Modal';
+import EditIcon from '@material-ui/icons/Edit';
 // core components
 import GridItem from "components/Grid/GridItem.jsx";
 import GridContainer from "components/Grid/GridContainer.jsx";
@@ -18,6 +19,7 @@ import CardBody from "components/Card/CardBody.jsx";
 import avatar from "assets/img/profile-pic.jpg";
 import AddressSection from "./AddressSection/AddressSection.jsx";
 import AddressSectionEdit from "./AddressSection/AddressSectionEdit.jsx";
+import ProfileDetailsEdit from "./ProfileDetailsEdit.jsx";
 
 const styles = theme => ({
   cardCategoryWhite: {
@@ -55,15 +57,20 @@ const styles = theme => ({
   },
   fabMargin: {
     margin: theme.spacing.unit * 2
+  },
+  editIcon: {
+    marginLeft: theme.spacing.unit * 2
   }
 });
 
 class ProfileTabView extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {modalOpen: false};
+    this.state = {modalOpen: false, pdModalOpen: false};
     this.handleOpen = this.handleOpen.bind(this);
     this.handleClose = this.handleClose.bind(this);
+    this.handlePDModalOpen = this.handlePDModalOpen.bind(this);
+    this.handlePDModalClose = this.handlePDModalClose.bind(this);
   }
 
   handleOpen(){
@@ -74,9 +81,17 @@ class ProfileTabView extends React.Component {
     this.setState({modalOpen: false});
   }
 
+  handlePDModalOpen(){
+    this.setState({pdModalOpen: true});
+  }
+
+  handlePDModalClose(){
+    this.setState({pdModalOpen: false});
+  }
+
   render() {
     const { classes } = this.props;
-    const { modalOpen } = this.state;
+    const { modalOpen, pdModalOpen } = this.state;
     let thisVar = this;
     let currUser = this.props.currUser;
     let defaultAddress = currUser && currUser.addresses && currUser.addresses[0] ? currUser.addresses[0] : "No Address registered!";
@@ -88,10 +103,21 @@ class ProfileTabView extends React.Component {
           </a>
         </CardAvatar>
         <CardContent>
-          <Typography component="h1" variant="h5">
-            Personal Details
-          </Typography>
           <GridContainer>
+            <GridItem xs={6} sm={6} md={6}>
+              <Typography component="h1" variant="h5">
+                Personal Details
+                <EditIcon className={classes.editIcon}  onClick={this.handlePDModalOpen} />
+                <Modal
+                  aria-labelledby="personal-details-modal-title"
+                  aria-describedby="personal-details-modal-description"
+                  open={pdModalOpen}
+                  onClose={() => this.handlePDModalClose()}
+                >
+                  <ProfileDetailsEdit currUser={currUser} parent={this} />
+                </Modal>
+              </Typography>
+            </GridItem>
             <GridItem xs={12} sm={12} md={12}>
               <TextField
                 id="standard-name"
@@ -108,16 +134,16 @@ class ProfileTabView extends React.Component {
                 id="standard-name"
                 label="First Name"
                 className={classes.textField}
-                value={currUser.firstName}
+                value={currUser.firstName ? currUser.firstName : " "}
                 margin="normal"
               />
             </GridItem>
             <GridItem xs={12} sm={12} md={6}>
               <TextField
                 id="standard-name"
-                label="First Name"
+                label="Last Name"
                 className={classes.textField}
-                value={currUser.lastName}
+                value={currUser.lastName ? currUser.lastName : " "}
                 margin="normal"
               />
             </GridItem>

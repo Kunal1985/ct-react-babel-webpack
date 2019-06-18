@@ -33,7 +33,7 @@ TabContainer.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
-const styles = theme => ({  
+const styles = theme => ({
   root: {
     flexGrow: 1,
     width: '100%',
@@ -73,24 +73,24 @@ class UserProfile extends React.Component {
     this.handleChange = this.handleChange.bind(this);
   }
 
-  async componentDidMount(){    
+  async componentDidMount() {
     let currUserId = getCurrCustomerId();
-    if(!currUserId){
+    if (!currUserId) {
       this.props.history.push("/login");
       return;
     }
     this.fetchCustomerDetails(currUserId);
   }
 
-  async fetchCustomerDetails(userId){
+  async fetchCustomerDetails(userId) {
     let response = await fetchCustomer(userId);
-    if(response.body){
+    if (response.body) {
       this.setState({
         currUser: response.body,
         udpateProfile: false
       });
     }
-    if(response.err){
+    if (response.err) {
       // Display some error modal
     }
   }
@@ -103,37 +103,37 @@ class UserProfile extends React.Component {
 
   render() {
     const { classes } = this.props;
-    let value = this.state && this.state.value;
-    let currUser = this.state.currUser;
+    let { value, currUser } = this.state;
+    console.log(currUser);
     let userFullName = currUser ? [currUser.firstName, currUser.lastName].join(" ") : "";
     let currUserId = currUser ? currUser.id : "";
     return (
       <div className={classes.root}>
         <React.Fragment>
           <CssBaseline />
-            <Card >
-              <AppBar position="static">
-                <Toolbar>
-                  <div className={classes.toolbarTitle}>
-                    <h4 className={classes.cardTitleWhite}>{userFullName}</h4>
-                    <p className={classes.cardCategoryWhite}>Profile# {currUserId}</p>
-                  </div>
-                  <Tabs value={value} onChange={this.handleChange} 
-                    indicatorColor="secondary"
-                    >
-                    <Tab label="Profile" icon={<PersonIcon />} />
-                    <Tab label="Orders" icon={<ShopRounded />} />
-                    <Tab label="Wish List" icon={<ShoppingBasket />} />
-                  </Tabs>
-                </Toolbar>
-              </AppBar>
-              <CardBody>
-                  {value === 0 && <ProfileTab parent={this} currUser={currUser}/>}
-                  {value === 1 && <MyOrdersTab parent={this} currUser={currUserId}/>}
-                  {value === 2 && <MyShoppingListsTab parent={this} currUser={currUserId}/>}
-              </CardBody>
-            </Card>
-        </React.Fragment>          
+          <Card >
+            <AppBar position="static">
+              <Toolbar>
+                <div className={classes.toolbarTitle}>
+                  <h4 className={classes.cardTitleWhite}>{userFullName}</h4>
+                  <p className={classes.cardCategoryWhite}>Profile# {currUserId}</p>
+                </div>
+                <Tabs value={value} onChange={this.handleChange}
+                  indicatorColor="secondary"
+                >
+                  <Tab label="Profile" icon={<PersonIcon />} />
+                  <Tab label="Orders" icon={<ShopRounded />} />
+                  <Tab label="Wish List" icon={<ShoppingBasket />} />
+                </Tabs>
+              </Toolbar>
+            </AppBar>
+            <CardBody>
+              {value === 0 && <ProfileTab parent={this} currUser={currUser} />}
+              {value === 1 && <MyOrdersTab parent={this} currUser={currUserId} />}
+              {value === 2 && <MyShoppingListsTab parent={this} currUser={currUserId} />}
+            </CardBody>
+          </Card>
+        </React.Fragment>
       </div>
     );
   }

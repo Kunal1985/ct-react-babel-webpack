@@ -15,7 +15,7 @@ import withStyles from '@material-ui/core/styles/withStyles';
 
 // import { withRouter } from "react-router-dom";
 import rp from 'request-promise';
-import { signIn } from '../../utils/CommonUtils';
+import { signIn, signUp } from '../../utils/CommonUtils';
 
 const styles = theme => ({
   main: {
@@ -52,9 +52,10 @@ const styles = theme => ({
 class Login extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {isLogin: true};
     this.handleChange = this.handleChange.bind(this);
     this.submitSignIn = this.submitSignIn.bind(this);
+    this.toggle = this.toggle.bind(this);
   }
 
   handleChange(event) {
@@ -63,22 +64,42 @@ class Login extends React.Component {
     this.setState({credentials});
   }
 
+  toggle(){
+    let {isLogin} = this.state;
+    this.setState({isLogin: !isLogin});
+  }
+
   async submitSignIn() {
     let thisVar = this;
-    let signInResponse = await signIn(this.state.credentials);
-    if(signInResponse.body){
+    let {isLogin, credentials} = this.state;
+    let response = {};
+    if(isLogin){
+      response = await signIn(credentials);
+    } else {
+      if(credentials.password === credentials.confirmPassword){
+        delete credentials.confirmPassword;
+        response = await signUp(credentials);
+      } else {
+        this.setState({errMessage: "Passwords do not match, please correct and retry!"});
+        return;
+      }
+    }
+    if(response.body){
       this.props.history.push({
         pathname: 'user',
-        state: { currUser: signInResponse.body.customer }
+        state: { currUser: response.body.customer }
       });
     }
-    if(signInResponse.err){
-      this.setState({signInErr: signInResponse.err});
+    if(response.err){
+      let error = response.err.error;
+      let message = `Error Occured with status code[${error.statusCode}]: ${error.message}`
+      this.setState({errMessage: message});
     }
   }
 
   render(){
     const { classes } = this.props;
+    const { isLogin, errMessage, email, password, confirmPassword } = this.state;
     return (
       <main className={classes.main}>
         <CssBaseline />
@@ -87,26 +108,45 @@ class Login extends React.Component {
             <LockOutlinedIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
-            Sign in
+            {isLogin? "Sign in": "Sign Up"}
           </Typography>
-          {this.state && this.state.signInErr && (
-            <Typography component="h1" variant="h6" color="error">
-              Invalid Credentials!
+          {errMessage && (
+            <Typography gutterBottom variant="body1" color="error">
+              {errMessage}
             </Typography>
           )}
           <form className={classes.form}>
+            {isLogin ? (
+              <div>
+                <FormControl margin="normal" required fullWidth>
+                  <InputLabel htmlFor="email">Email Address</InputLabel>
+                  <Input id="email" name="email" autoComplete="email" autoFocus value={email} onChange={this.handleChange}/>
+                </FormControl>
+                <FormControl margin="normal" required fullWidth>
+                  <InputLabel htmlFor="password">Password</InputLabel>
+                  <Input name="password" type="password" id="password" autoComplete="current-password" value={password} onChange={this.handleChange}/>
+                </FormControl>
+              </div>
+            ):(
+              <div>
+                <FormControl margin="normal" required fullWidth>
+                  <InputLabel htmlFor="email">Email Address</InputLabel>
+                  <Input id="email" name="email" autoComplete="email" autoFocus value={email} onChange={this.handleChange}/>
+                </FormControl>
+                <FormControl margin="normal" required fullWidth>
+                  <InputLabel htmlFor="password">Password</InputLabel>
+                  <Input name="password" type="password" id="password" autoComplete="current-password" value={password} onChange={this.handleChange}/>
+                </FormControl>
+                <FormControl margin="normal" required fullWidth>
+                  <InputLabel htmlFor="confirmPassword">Confirm Password</InputLabel>
+                  <Input name="confirmPassword" type="password" id="confirmPassword" autoComplete="current-password" value={confirmPassword} onChange={this.handleChange}/>
+                </FormControl>
+              </div>
+            )}
+
             <FormControl margin="normal" required fullWidth>
-              <InputLabel htmlFor="email">Email Address</InputLabel>
-              <Input id="email" name="email" autoComplete="email" autoFocus value={this.state.email} onChange={this.handleChange}/>
+              <Button className={classes.button} onClick={this.toggle}>{isLogin? "Register Now": "Login with Credentials"}</Button>
             </FormControl>
-            <FormControl margin="normal" required fullWidth>
-              <InputLabel htmlFor="password">Password</InputLabel>
-              <Input name="password" type="password" id="password" autoComplete="current-password" value={this.state.password} onChange={this.handleChange}/>
-            </FormControl>
-            <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
-              label="Remember me"
-            />
             <Button
               type="button"
               fullWidth
@@ -115,7 +155,7 @@ class Login extends React.Component {
               className={classes.submit}
               onClick={this.submitSignIn}
             >
-              Sign in
+              {isLogin ? "Sign in": "Register"}
             </Button>
           </form>
         </Paper>

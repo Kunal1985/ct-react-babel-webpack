@@ -6,22 +6,7 @@ import Button from '@material-ui/core/Button';
 // core components
 import GridItem from "components/Grid/GridItem.jsx";
 import GridContainer from "components/Grid/GridContainer.jsx";
-import { updateCustomer } from "../../../../utils/CommonUtils";
-
-function rand() {
-  return Math.round(Math.random() * 20) - 10;
-}
-
-function getModalStyle() {
-  const top = 50 + rand();
-  const left = 50 + rand();
-
-  return {
-    top: `${top}%`,
-    left: `${left}%`,
-    transform: `translate(-${top}%, -${left}%)`,
-  };
-}
+import { updateCustomer, getModalStyle } from "../../../../utils/CommonUtils";
 
 const styles = theme => ({
   paper: {
@@ -61,7 +46,11 @@ class AddressSectionEdit extends React.Component {
           address: address
         }]
       }
-      currParent = parent.props.parent.props.parent.props.parent;
+      if(parent.props.parent.name === "AddressForm"){
+        currParent = parent.props.parent.props.parent;
+      } else{
+        currParent = parent.props.parent.props.parent.props.parent;
+      }
     } else{
       requestBody = {
         version: currUser.version,
@@ -70,7 +59,11 @@ class AddressSectionEdit extends React.Component {
           address: address
         }]
       }
-      currParent = parent.props.parent.props.parent;
+      if(parent.name === "AddressForm"){
+        currParent = parent.props.parent; 
+      } else{
+        currParent = parent.props.parent.props.parent;
+      }
     }
     console.log(currParent);
     let response = await updateCustomer(requestBody);
