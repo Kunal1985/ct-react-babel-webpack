@@ -575,7 +575,7 @@ let createCart = function () {
     });
 }
 
-let addItemToCart = function (currSku) {
+let addItemToCart = function (currSku, quantity) {
   let options = {
     method: "POST",
     url: `${API_BASE_URL}/carts/` + getCurrCartId(),
@@ -589,7 +589,7 @@ let addItemToCart = function (currSku) {
       "actions": [{
         "action": "addLineItem",
         "sku": currSku.sku,
-        "quantity": 1
+        quantity: parseInt(quantity)
       }]
     }
   }

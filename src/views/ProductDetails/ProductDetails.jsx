@@ -16,8 +16,11 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
-
+import Divider from '@material-ui/core/Divider';
+import StarIcon from '@material-ui/icons/Star';
+// Import Utils
 import { fetchProductById, addItemToCart, getCurrCartId, createCart, getCurrListId, createList, addItemToList, getCurrCustomerId, fetchCustomerShoppingLists, setCurrListId, setCurrListVersion, getCurrListVersion } from '../../utils/CommonUtils';
+import ReviewsRatings from '../common/ReviewsRatings.jsx';
 
 const styles = theme => ({
   paper: {
@@ -33,7 +36,7 @@ const styles = theme => ({
   formControl: {
     marginTop: theme.spacing.unit * 2,
     marginRight: theme.spacing.unit * 2,
-    width: "40%"
+    width: "30%"
   },
   img: {
     maxWidth: 400
@@ -43,7 +46,7 @@ const styles = theme => ({
 class ProductDetails extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { isDialogOpen: false, shoppingLists:[] };
+    this.state = { isDialogOpen: false, shoppingLists: [], quantity: 1 };
     this.handleChange = this.handleChange.bind(this);
     this.addToCart = this.addToCart.bind(this);
     this.addToList = this.addToList.bind(this);
@@ -53,6 +56,7 @@ class ProductDetails extends React.Component {
     this.handleCreateList = this.handleCreateList.bind(this);
     this.handleSelectList = this.handleSelectList.bind(this);
     this.fetchShoppingLists = this.fetchShoppingLists.bind(this);
+    this.handleQtyChange = this.handleQtyChange.bind(this);
   }
 
   async componentDidMount() {
@@ -162,31 +166,32 @@ class ProductDetails extends React.Component {
     }
     currCartId = getCurrCartId();
     if (currCartId) {
-      let response = await addItemToCart(this.state.currSelectedSku);
+      let { currSelectedSku, quantity } = this.state;
+      let response = await addItemToCart(currSelectedSku, quantity);
       if (response.body) {
         this.props.history.push("/cart");
       }
     }
   }
 
-  handleDialogOpen(){
+  handleDialogOpen() {
     this.setState({ isDialogOpen: true });
   }
 
   async addToList() {
     let response = await addItemToList(this.state.currSelectedSku);
-    if(response.body){
-      this.setState({isDialogOpen: false})
+    if (response.body) {
+      this.setState({ isDialogOpen: false })
     }
   }
 
   async handleCreateList() {
     let listName = this.state.listName;
     let response = await createList(listName);
-    if(response.body){
+    if (response.body) {
       this.fetchShoppingLists();
     }
-    if(response.err){
+    if (response.err) {
       //Display some error popup.
     }
   }
@@ -199,7 +204,7 @@ class ProductDetails extends React.Component {
     this.setState({ isDialogOpen: false });
   }
 
-  handleSelectList(event){
+  handleSelectList(event) {
     let selectedValue = event.target.value;
     let selectedValueArr = selectedValue.split("---")
     let listId = selectedValueArr[0];
@@ -207,20 +212,24 @@ class ProductDetails extends React.Component {
     console.log(listId, listVersion);
     setCurrListId(listId);
     setCurrListVersion(listVersion);
-    this.setState({selectedList: selectedValue});
+    this.setState({ selectedList: selectedValue });
   }
 
-  async fetchShoppingLists(){
+  async fetchShoppingLists() {
     console.log("fetchShoppingLists");
     let customerId = getCurrCustomerId();
-    if(!customerId){
+    if (!customerId) {
       return;
     }
     let response = await fetchCustomerShoppingLists(customerId);
-    if(response.body){
+    if (response.body) {
       console.log("shoppingLists", response.body.results);
-      this.setState({shoppingLists: response.body.results});
+      this.setState({ shoppingLists: response.body.results });
     }
+  }
+
+  handleQtyChange(event) {
+    this.setState({ quantity: event.target.value });
   }
 
   render() {
@@ -228,9 +237,9 @@ class ProductDetails extends React.Component {
     let customerId = getCurrCustomerId();
     let thisVar = this;
     let currState = this.state;
-    let { listName, isDialogOpen, selectedList, shoppingLists } = currState;
+    let { listName, isDialogOpen, selectedList, shoppingLists, quantity } = currState;
     let currListInStorage = getCurrListId();
-    if(!selectedList && currListInStorage){
+    if (!selectedList && currListInStorage) {
       selectedList = [currListInStorage, getCurrListVersion()].join("---");
     }
     let age = currState.age;
@@ -258,6 +267,22 @@ class ProductDetails extends React.Component {
                     <Typography variant="body2" color="textSecondary">
                       ID: {currProduct.id}
                     </Typography>
+                  </Grid>
+                  <Grid item xs>
+                    <StarIcon color="primary"/>
+                    <StarIcon color="primary"/>
+                    <StarIcon color="primary"/>
+                    <StarIcon color="disabled"/>
+                    <StarIcon color="disabled"/>
+                    <Typography variant="body2" color="textSecondary">
+                      Description
+                    </Typography>
+                    <Typography variant="body1" color="textSecondary">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Fusce nec tellus sed augue semper porta. Mauris massa. Vestibulum lacinia arcu eget nulla. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Curabitur sodales ligula in libero. 
+                    </Typography>
+                  </Grid>
+                  <Divider />  
+                  <Grid item xs>  
                     <Typography variant="body2" variant="subtitle2">
                       Select variant options...
                     </Typography>
@@ -284,6 +309,20 @@ class ProductDetails extends React.Component {
                         </FormControl>
                       )
                     })}
+                  </Grid>  
+                  <Grid item xs>
+                    <TextField
+                      id="standard-number"
+                      label="Quantity"
+                      value={quantity}
+                      onChange={this.handleQtyChange}
+                      type="number"
+                      className={classes.textField}
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                      margin="normal"
+                    />
                   </Grid>
                   <Grid item padding={16}>
                     {currSelectedSku ? (
@@ -297,18 +336,20 @@ class ProductDetails extends React.Component {
                           </Button>
                         )}
                       </div>
-                      ) : (
+                    ) : (
                         <Button variant="contained" size="small" disabled color="secondary" className={classes.button}>
                           Out of Stock
                       </Button>
                       )}
                   </Grid>
+                  <Divider />
                 </Grid>
               </Grid>
             </Grid>
           ) : (
               "Loading, please wait!"
             )}
+          <ReviewsRatings />  
           <Dialog open={isDialogOpen} onClose={this.handleDialogClose} aria-labelledby="form-dialog-title">
             <DialogTitle id="form-dialog-title">Create Shopping List</DialogTitle>
             <DialogContent>
@@ -326,7 +367,7 @@ class ProductDetails extends React.Component {
               />
               <Button onClick={this.handleCreateList} color="primary" variant="contained" >
                 Create List
-              </Button>  
+              </Button>
               <DialogContentText>
                 Select one of the below Shopping-Lists to proceed!
               </DialogContentText>
@@ -353,15 +394,15 @@ class ProductDetails extends React.Component {
               <Button onClick={this.handleDialogClose} color="secondary" variant="contained">
                 Cancel
               </Button>
-              { selectedList ? (
+              {selectedList ? (
                 <Button onClick={this.addToList} color="primary" variant="contained" >
                   Add to List
-                </Button>  
+                </Button>
               ) : (
-                <Button color="primary" variant="contained" disabled>
-                  Add to List
-                </Button>  
-              )}
+                  <Button color="primary" variant="contained" disabled>
+                    Add to List
+                </Button>
+                )}
             </DialogActions>
           </Dialog>
         </Paper>

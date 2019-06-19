@@ -122,7 +122,8 @@ class MyOrdersTab extends React.Component {
 
   handleChangeRowsPerPage(event) {
     let newState = {
-      rowsPerPage: event.target.value
+      rowsPerPage: event.target.value,
+      page: 0
     }
     this.setState(newState);
     this.handleRequestParams(newState);
@@ -132,7 +133,7 @@ class MyOrdersTab extends React.Component {
     let currState = this.state;
     let order = newState.order ? newState.order : currState.order;
     let orderBy = newState.orderBy ? newState.orderBy : currState.orderBy;
-    let page = newState.page ? newState.page : currState.page;
+    let page = (newState.page || newState.page === 0) ? newState.page : currState.page;
     let rowsPerPage = newState.rowsPerPage ? newState.rowsPerPage : currState.rowsPerPage;
     let limit = rowsPerPage;
     let offset = limit*page;
@@ -170,6 +171,7 @@ class MyOrdersTab extends React.Component {
     let { order, orderBy, page, rowsPerPage, myOrders, modalOpen, orderInModal } = this.state;
     let rows = myOrders && myOrders.results ? myOrders.results : [];
     let rowsLength = myOrders && myOrders.total ? myOrders.total : 0;
+    let pageSizeArr = (rowsLength <= 5) ? [5] : (rowsLength <= 10) ? [5, 10] : [5, 10, 25];
     return (
       <div className={classes.root}>
         <Paper className={classes.paper}>
@@ -239,7 +241,7 @@ class MyOrdersTab extends React.Component {
             </Table>
           </div>
           <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
+            rowsPerPageOptions={pageSizeArr}
             component="div"
             count={rowsLength}
             rowsPerPage={rowsPerPage}
@@ -256,8 +258,8 @@ class MyOrdersTab extends React.Component {
         </Paper>
 
         <Modal
-          aria-labelledby="simple-modal-title"
-          aria-describedby="simple-modal-description"
+          aria-labelledby="orders-modal-title"
+          aria-describedby="orders-modal-description"
           open={modalOpen}
           onClose={() => this.handleCloseModal()}
         >

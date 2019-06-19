@@ -128,7 +128,8 @@ class MyShoppingListsTab extends React.Component {
 
   handleChangeRowsPerPage(event) {
     let newState = {
-      rowsPerPage: event.target.value
+      rowsPerPage: event.target.value,
+      page: 0
     }
     this.setState(newState);
     this.handleRequestParams(newState);
@@ -147,7 +148,7 @@ class MyShoppingListsTab extends React.Component {
     let currState = this.state;
     let order = newState.order ? newState.order : currState.order;
     let orderBy = newState.orderBy ? newState.orderBy : currState.orderBy;
-    let page = newState.page ? newState.page : currState.page;
+    let page = (newState.page || newState.page === 0) ? newState.page : currState.page;
     let rowsPerPage = newState.rowsPerPage ? newState.rowsPerPage : currState.rowsPerPage;
     let limit = rowsPerPage;
     let offset = limit*page;
@@ -201,6 +202,8 @@ class MyShoppingListsTab extends React.Component {
     const emptyRows = 0;
     let { order, orderBy, page, rowsPerPage, myShoppingLists, modalOpen, listInModal, openDialog } = this.state;
     let rows = myShoppingLists && myShoppingLists.results ? myShoppingLists.results: [];
+    let rowsLength = rows && rows.length ? rows.length : 0;
+    let pageSizeArr = (rowsLength <= 5) ? [5] : (rowsLength <= 10) ? [5, 10] : [5, 10, 25];
     return (
       <div className={classes.root}>
         <Paper className={classes.paper}>
@@ -265,7 +268,7 @@ class MyShoppingListsTab extends React.Component {
             </Table>
           </div>
           <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
+            rowsPerPageOptions={pageSizeArr}
             component="div"
             count={rows.length}
             rowsPerPage={rowsPerPage}
@@ -282,8 +285,8 @@ class MyShoppingListsTab extends React.Component {
         </Paper>
 
         <Modal
-          aShoppingListView
-          aria-describedby="simple-modal-description"
+          aria-labelledby="shopping-lists-modal-title"
+          aria-describedby="shopping-lists-modal-description"
           open={modalOpen}
           onClose={() => this.handleCloseModal()}
         >

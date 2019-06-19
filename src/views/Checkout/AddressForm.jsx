@@ -31,6 +31,9 @@ class AddressForm extends React.Component {
     const { props, state } = this;
     console.log("AddressForm componentDidUpdate", props, state);
     let { selectedAddress } = state;
+    if(!selectedAddress){
+      selectedAddress = props.selectedAddress
+    }
     if (props.submit) {
       let response = await addShippingToCart(selectedAddress);
       if (response.body) {
@@ -70,10 +73,10 @@ class AddressForm extends React.Component {
 
   render() {
     let thisVar = this;
-    let { classes, currUser } = this.props;
+    let { classes, currUser, selectedAddress } = this.props;
     let { modalOpen, selectedValue } = this.state;
-    if (!selectedValue && currUser) {
-      selectedValue = currUser.defaultShippingAddressId;
+    if(!selectedValue && selectedAddress){
+      selectedValue = selectedAddress.id
     }
     let noAddress = (currUser && currUser.addresses && currUser.addresses.length === 0) ? true : false;
     return (

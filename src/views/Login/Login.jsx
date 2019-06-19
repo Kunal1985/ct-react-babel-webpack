@@ -52,52 +52,54 @@ const styles = theme => ({
 class Login extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {isLogin: true};
+    this.state = { isLogin: true };
     this.handleChange = this.handleChange.bind(this);
     this.submitSignIn = this.submitSignIn.bind(this);
     this.toggle = this.toggle.bind(this);
   }
 
   handleChange(event) {
-    let credentials = this.state.credentials ? this.state.credentials: {};
+    let credentials = this.state.credentials ? this.state.credentials : {};
     credentials[event.target.name] = event.target.value;
-    this.setState({credentials});
+    this.setState({ credentials });
   }
 
-  toggle(){
-    let {isLogin} = this.state;
-    this.setState({isLogin: !isLogin});
+  toggle() {
+    let { isLogin } = this.state;
+    this.setState({ isLogin: !isLogin });
   }
 
   async submitSignIn() {
     let thisVar = this;
-    let {isLogin, credentials} = this.state;
+    let { isLogin, credentials } = this.state;
+    let { location } = this.props;
+    let { redirectPage } = location;
     let response = {};
-    if(isLogin){
+    if (isLogin) {
       response = await signIn(credentials);
     } else {
-      if(credentials.password === credentials.confirmPassword){
+      if (credentials.password === credentials.confirmPassword) {
         delete credentials.confirmPassword;
         response = await signUp(credentials);
       } else {
-        this.setState({errMessage: "Passwords do not match, please correct and retry!"});
+        this.setState({ errMessage: "Passwords do not match, please correct and retry!" });
         return;
       }
     }
-    if(response.body){
+    if (response.body) {
       this.props.history.push({
-        pathname: 'user',
+        pathname: redirectPage ? redirectPage : 'user',
         state: { currUser: response.body.customer }
       });
     }
-    if(response.err){
+    if (response.err) {
       let error = response.err.error;
       let message = `Error Occured with status code[${error.statusCode}]: ${error.message}`
-      this.setState({errMessage: message});
+      this.setState({ errMessage: message });
     }
   }
 
-  render(){
+  render() {
     const { classes } = this.props;
     const { isLogin, errMessage, email, password, confirmPassword } = this.state;
     return (
@@ -108,7 +110,7 @@ class Login extends React.Component {
             <LockOutlinedIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
-            {isLogin? "Sign in": "Sign Up"}
+            {isLogin ? "Sign in" : "Sign Up"}
           </Typography>
           {errMessage && (
             <Typography gutterBottom variant="body1" color="error">
@@ -120,32 +122,32 @@ class Login extends React.Component {
               <div>
                 <FormControl margin="normal" required fullWidth>
                   <InputLabel htmlFor="email">Email Address</InputLabel>
-                  <Input id="email" name="email" autoComplete="email" autoFocus value={email} onChange={this.handleChange}/>
+                  <Input id="email" name="email" autoComplete="email" autoFocus value={email} onChange={this.handleChange} />
                 </FormControl>
                 <FormControl margin="normal" required fullWidth>
                   <InputLabel htmlFor="password">Password</InputLabel>
-                  <Input name="password" type="password" id="password" autoComplete="current-password" value={password} onChange={this.handleChange}/>
+                  <Input name="password" type="password" id="password" autoComplete="current-password" value={password} onChange={this.handleChange} />
                 </FormControl>
               </div>
-            ):(
-              <div>
-                <FormControl margin="normal" required fullWidth>
-                  <InputLabel htmlFor="email">Email Address</InputLabel>
-                  <Input id="email" name="email" autoComplete="email" autoFocus value={email} onChange={this.handleChange}/>
-                </FormControl>
-                <FormControl margin="normal" required fullWidth>
-                  <InputLabel htmlFor="password">Password</InputLabel>
-                  <Input name="password" type="password" id="password" autoComplete="current-password" value={password} onChange={this.handleChange}/>
-                </FormControl>
-                <FormControl margin="normal" required fullWidth>
-                  <InputLabel htmlFor="confirmPassword">Confirm Password</InputLabel>
-                  <Input name="confirmPassword" type="password" id="confirmPassword" autoComplete="current-password" value={confirmPassword} onChange={this.handleChange}/>
-                </FormControl>
-              </div>
-            )}
+            ) : (
+                <div>
+                  <FormControl margin="normal" required fullWidth>
+                    <InputLabel htmlFor="email">Email Address</InputLabel>
+                    <Input id="email" name="email" autoComplete="email" autoFocus value={email} onChange={this.handleChange} />
+                  </FormControl>
+                  <FormControl margin="normal" required fullWidth>
+                    <InputLabel htmlFor="password">Password</InputLabel>
+                    <Input name="password" type="password" id="password" autoComplete="current-password" value={password} onChange={this.handleChange} />
+                  </FormControl>
+                  <FormControl margin="normal" required fullWidth>
+                    <InputLabel htmlFor="confirmPassword">Confirm Password</InputLabel>
+                    <Input name="confirmPassword" type="password" id="confirmPassword" autoComplete="current-password" value={confirmPassword} onChange={this.handleChange} />
+                  </FormControl>
+                </div>
+              )}
 
             <FormControl margin="normal" required fullWidth>
-              <Button className={classes.button} onClick={this.toggle}>{isLogin? "Register Now": "Login with Credentials"}</Button>
+              <Button className={classes.button} onClick={this.toggle}>{isLogin ? "Register Now" : "Login with Credentials"}</Button>
             </FormControl>
             <Button
               type="button"
@@ -155,13 +157,13 @@ class Login extends React.Component {
               className={classes.submit}
               onClick={this.submitSignIn}
             >
-              {isLogin ? "Sign in": "Register"}
+              {isLogin ? "Sign in" : "Register"}
             </Button>
           </form>
         </Paper>
       </main>
     );
-  }  
+  }
 }
 
 Login.propTypes = {

@@ -155,8 +155,10 @@ class ShoppingCart extends React.Component {
                     <TableHead>
                       <TableRow>
                         <TableCell><Typography variant="subtitle1">Item</Typography></TableCell>
+                        <TableCell align="right"></TableCell>
                         <TableCell align="right"><Typography variant="subtitle1">Qty.</Typography></TableCell>
-                        <TableCell align="right"><Typography variant="subtitle1">Price</Typography></TableCell>
+                        <TableCell align="right"><Typography variant="subtitle1">Unit Price</Typography></TableCell>
+                        <TableCell align="right"><Typography variant="subtitle1">Total Price</Typography></TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -177,9 +179,18 @@ class ShoppingCart extends React.Component {
                                       {row.name.en}
                                     </Typography>
                                     <Typography color="textSecondary">ID: {row.id}</Typography>
+                                    <Typography color="textSecondary" variant="subtitle2">Attributes</Typography>
+                                    {row.variant.attributes && row.variant.attributes.map(function(attribute){
+                                      return <Typography color="textSecondary" key={attribute.name}>{attribute.name}: {attribute.value}</Typography>
+                                    })}
                                   </Grid>
                                 </Grid>
                               </Grid>
+                            </TableCell>
+                            <TableCell align="right">
+                              <IconButton aria-label="Delete" className={classes.margin} onClick={() => thisVar.removeItem(row.id)}>
+                                <DeleteIcon />
+                              </IconButton>
                             </TableCell>
                             <TableCell align="right">
                               <Typography variant="subtitle1">
@@ -188,21 +199,21 @@ class ShoppingCart extends React.Component {
                             </TableCell>
                             <TableCell align="right">
                               <Typography variant="subtitle1">
-                                <NumberFormat value={row.totalPrice.centAmount / 100} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
+                                <NumberFormat value={row.price.value.centAmount / 100} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
                               </Typography>
                             </TableCell>
                             <TableCell align="right">
-                              <IconButton aria-label="Delete" className={classes.margin} onClick={() => thisVar.removeItem(row.id)}>
-                                <DeleteIcon />
-                              </IconButton>
+                              <Typography variant="subtitle1">
+                                <NumberFormat value={row.totalPrice.centAmount / 100} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
+                              </Typography>
                             </TableCell>
                           </TableRow>
                         )
                       })}
 
                       <TableRow>
-                        <TableCell rowSpan={3} colSpan={2} />
-                        <TableCell ><Typography variant="subtitle1">Subtotal</Typography></TableCell>
+                        <TableCell rowSpan={3} colSpan={3} />
+                        <TableCell align="right"><Typography variant="subtitle1">Subtotal</Typography></TableCell>
                         <TableCell align="right">
                           <Typography variant="subtitle1">
                             <NumberFormat value={subTotal} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
@@ -210,7 +221,7 @@ class ShoppingCart extends React.Component {
                         </TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell><Typography variant="subtitle1">Tax</Typography></TableCell>
+                        <TableCell align="right"><Typography variant="subtitle1">Tax</Typography></TableCell>
                         <TableCell align="right">
                           <Typography variant="subtitle1">
                             <NumberFormat value={taxAmount} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
@@ -218,9 +229,9 @@ class ShoppingCart extends React.Component {
                         </TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell ><Typography variant="subtitle1">Total</Typography></TableCell>
+                        <TableCell align="right"><Typography variant="h6">Total</Typography></TableCell>
                         <TableCell align="right">
-                          <Typography variant="subtitle1">
+                          <Typography variant="h6">
                             <NumberFormat value={grossTotal} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
                           </Typography>
                         </TableCell>
@@ -234,7 +245,7 @@ class ShoppingCart extends React.Component {
             </CardBody>
             {!emptyCart &&
               <CardActions className={classes.cardActionBtn}>
-                <Button variant="contained" size="small" color="primary" className={classes.button} onClick={() => this.props.history.push('checkout')}>
+                <Button variant="contained" size="small" color="primary" className={classes.button} onClick={() => this.props.history.push({pathname: 'checkout', currCart: currCart})}>
                   Checkout
                 </Button>
               </CardActions>

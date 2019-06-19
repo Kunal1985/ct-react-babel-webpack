@@ -26,21 +26,21 @@ const tileData = [
     img: "/assets/img/banner1.jpg",
     title: 'SUMMER LOVIN',
     subtitle: 'SUMMER MUST HAVE OUTFITS',
-    categoryId: "4f42805c-9cfa-4459-a84d-7e3405ad31ea",
+    categoryId: "1a143bf6-968a-4632-9f97-075f2cd624c2",
     className: "gridListTile50"
   },
   {
     img: "/assets/img/banner2.jpg",
     title: 'FASHION STYLES',
     subtitle: 'UNIQUE STYLE FOR EVERY SEASON',
-    categoryId: "ba084ade-51a2-4aac-85a5-27c6a0823a59",
+    categoryId: "ec534c23-dc16-41b3-aed1-8555e60b5a7a",
     className: "gridListTile50"
   },
   {
     img: "/assets/img/banner3.jpg",
     title: 'MUST HAVES',
     subtitle: 'HOT PIECES FOR THE SUMMER THIS YEAR',
-    categoryId: "65fe5574-cb93-4c90-95c9-675a419ecffc",
+    categoryId: "45b04868-c8b0-47d6-a686-7883d7475ae5",
     className: "gridListTile100"
   },
 ];
