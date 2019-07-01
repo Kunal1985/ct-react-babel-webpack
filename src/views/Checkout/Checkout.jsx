@@ -20,6 +20,7 @@ import { connect } from 'react-redux';
 import { fetchUserFromSession, fetchUserById } from '../../actions/userActions'
 import { fetchCartFromSession, fetchCartById, clearOldCartFromSession } from '../../actions/cartActions'
 import { submitOrderAction } from '../../actions/orderActions'
+import { getCurrCartId } from '../../utils/CommonUtils.js';
 
 const styles = theme => ({
   appBar: {
@@ -55,6 +56,49 @@ class Checkout extends React.Component {
   state = {
     activeStep: 0,
   };
+
+  componentWillMount() {
+    this.props.fetchUserFromSession();
+    let { userFromReducer, userErrorFromReducer } = this.props;
+    if (userErrorFromReducer) {
+      // Display some error
+      return;
+    }
+    if (!userFromReducer.id) {
+      this.props.fetchUserById();
+    }
+    this.props.fetchCartFromSession();
+    let { cartFromReducer, cartErrorFromReducer } = this.props;
+    if (cartErrorFromReducer) {
+      // Display some error
+      return;
+    }
+    if (!cartFromReducer.id) {
+      this.props.fetchCartById();
+    } else {
+      cartFromReducer.shippingAddress && this.setState({ selectedAddress: cartFromReducer.shippingAddress });
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    let { orderFromReducer, cartFromReducer, cartErrorFromReducer } = nextProps;
+    if (orderFromReducer.orderNumber) {
+      if(cartFromReducer.id){
+        this.props.clearOldCartFromSession();
+      } else{
+        if(this.state.activeStep === steps.length-1){
+          this.handleFormSubmit();
+        }
+      }
+    }
+    if (cartFromReducer.id) {
+      cartFromReducer.shippingAddress && this.setState({ selectedAddress: cartFromReducer.shippingAddress });
+    } else{
+      if(!orderFromReducer.orderNumber){
+        nextProps.history.push("")
+      }
+    }
+  }
 
   getStepContent(step) {
     let { submitAddress, submitPayment, submitReview, selectedAddress } = this.state;
@@ -125,46 +169,6 @@ class Checkout extends React.Component {
       activeStep: 0,
     });
   };
-
-  componentWillMount() {
-    this.props.fetchUserFromSession();
-    let { userFromReducer, userErrorFromReducer } = this.props;
-    if (userErrorFromReducer) {
-      // Display some error
-      return;
-    }
-    if (!userFromReducer.id) {
-      this.props.fetchUserById();
-    }
-    this.props.fetchCartFromSession();
-    let { cartFromReducer, cartErrorFromReducer } = this.props;
-    if (cartErrorFromReducer) {
-      // Display some error
-      return;
-    }
-    if (!cartFromReducer.id) {
-      this.props.fetchCartById();
-    } else {
-      cartFromReducer.shippingAddress && this.setState({ selectedAddress: cartFromReducer.shippingAddress });
-    }
-  }
-
-  componentWillReceiveProps(nextProps) {
-    console.log("Checkout componentWillReceiveProps");    
-    let { orderFromReducer, cartFromReducer, cartErrorFromReducer } = nextProps;
-    if (orderFromReducer.orderNumber) {
-      if(cartFromReducer.id){
-        this.props.clearOldCartFromSession();
-      } else{
-        if(this.state.activeStep === steps.length-1){
-          this.handleFormSubmit();
-        }
-      }
-    }
-    if (cartFromReducer.id) {
-      cartFromReducer.shippingAddress && this.setState({ selectedAddress: cartFromReducer.shippingAddress });
-    }
-  }
 
   handleAddressSelect = (address) => {
     this.setState({ selectedAddress: address });

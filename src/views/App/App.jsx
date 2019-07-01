@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Provider} from 'react-redux';
+import { Provider } from 'react-redux';
 import { withStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import AppBar from '@material-ui/core/AppBar';
@@ -17,6 +17,7 @@ import NumberFormat from 'react-number-format';
 import { invokeAuthAPI } from 'utils/CommonUtils.js'
 import { getCurrCustomerId, removeCurrCustomerId, getCurrCartId, fetchCart } from '../../utils/CommonUtils';
 import store from '../../store';
+import MiniCartTrigger from './MiniCartTrigger.jsx';
 
 const styles = theme => ({
   '@global': {
@@ -61,12 +62,12 @@ class App extends React.Component {
     this.mouseOutPopperAction = this.mouseOutPopperAction.bind(this);
   }
 
-  redirectPage(redirectRoute) {
-    window.open("#/" + redirectRoute, "_self");
-  }
-
   componentDidMount() {
     invokeAuthAPI();
+  }
+
+  redirectPage(redirectRoute) {
+    window.open("#/" + redirectRoute, "_self");
   }
 
   handleLogout() {
@@ -77,19 +78,17 @@ class App extends React.Component {
     this.redirectPage('')
   }
 
-  async mouseOverPopperAction(event, newValue) {
-    console.log("mouseOverPopperAction, Fetching Cart again!");
+  mouseOverPopperAction(event, newValue) {
     this.setState({ open: true, anchorEl: document.getElementById('miniCart') });
   }
 
   mouseOutPopperAction(event, newValue) {
-    console.log("mouseOutPopperAction")
     this.setState({ open: false, anchorEl: null });
   }
 
   render() {
-    const { classes, history } = this.props;
-    const { open, anchorEl, currCart } = this.state;
+    const { classes } = this.props;
+    const { open, anchorEl } = this.state;
     let currCustomerId = getCurrCustomerId();
     return (
       <Provider store={store}>
@@ -122,16 +121,17 @@ class App extends React.Component {
           <div className={classes.layout}>
             {this.props.children}
           </div>
-          <Popper id="popperTest" 
-            open={open} 
-            anchorEl={anchorEl} 
+          <MiniCartTrigger parent={this}/>
+          <Popper id="popperTest"
+            open={open}
+            anchorEl={anchorEl}
             onMouseEnter={this.mouseOverPopperAction}
             onMouseLeave={this.mouseOutPopperAction}
-            className={classes.popper} 
+            className={classes.popper}
             transition >
             {({ TransitionProps }) => (
-              <Fade {...TransitionProps} timeout={350}>                
-                <MiniShoppingCart miniCart={true}/>
+              <Fade {...TransitionProps} timeout={350}>
+                <MiniShoppingCart miniCart={true} />
               </Fade>
             )}
           </Popper>

@@ -119,7 +119,6 @@ class ProductDetails extends React.Component {
         return item
       }
     });
-    console.log(selectedSku);
     let skuSelection = null;
     if (selectedSku) {
       let masterData = this.state.currProduct;
@@ -216,21 +215,18 @@ class ProductDetails extends React.Component {
     let selectedValueArr = selectedValue.split("---")
     let listId = selectedValueArr[0];
     let listVersion = selectedValueArr[1];
-    console.log(listId, listVersion);
     setCurrListId(listId);
     setCurrListVersion(listVersion);
     this.setState({ selectedList: selectedValue });
   }
 
   async fetchShoppingLists() {
-    console.log("fetchShoppingLists");
     let customerId = getCurrCustomerId();
     if (!customerId) {
       return;
     }
     let response = await fetchCustomerShoppingLists(customerId);
     if (response.body) {
-      console.log("shoppingLists", response.body.results);
       this.setState({ shoppingLists: response.body.results });
     }
   }
@@ -258,7 +254,6 @@ class ProductDetails extends React.Component {
       this.fetchProduct();
     }
     let currSelectedSku = currState.currSelectedSku;
-    console.log("currSelectedSku", currSelectedSku);
     let skuPrice = currSelectedSku && currSelectedSku.prices[0];
     let isDiscounted = skuPrice && skuPrice.discounted ? true : false;
     let discountedPrice = isDiscounted ? skuPrice.discounted.value.centAmount / 100 : skuPrice && skuPrice.value.centAmount / 100;

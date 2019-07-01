@@ -149,7 +149,6 @@ class Home extends React.Component {
           categories.push({ id: currCategory.id, displayName: currCategory.name.en });
           categorIds.push(categoryId)
         }
-        console.log(categories);
       });
       this.setState({ categories: categories });
     }
@@ -158,9 +157,7 @@ class Home extends React.Component {
   async fetchCats() {
     let response = await fetchCategories();
     if (response.err) {
-      console.log(response.err);
       if (response.err.error.error === "invalid_token") {
-        console.log("Retry fetchCats")
         return this.fetchCats();
       } else {
         // Display some error pop-up.
@@ -201,7 +198,6 @@ class Home extends React.Component {
     let open = this.state.open ? this.state.open : false;
     let categories = this.state.categories ? this.state.categories : [];
     let subCats = categories[value - 1] && categories[value - 1].subCats ? categories[value - 1].subCats : [];
-    console.log(subCats);
     return (
       <React.Fragment>
         <CssBaseline />
@@ -238,7 +234,6 @@ class Home extends React.Component {
                   <Grid container>
                     {subCats & subCats.map(function (subCategory) {
                       let displayName = subCategory.displayName
-                      console.log(displayName)
                       return (
                         <Grid item xs={4}>
                           <Typography gutterBottom variant="h5" component="h2">

@@ -28,15 +28,15 @@ const styles = theme => ({
 });
 
 const rrList = [{
-
-},{
-
-},{
-
+  id: 1
+}, {
+  id: 2
+}, {
+  id: 3
 }]
 
 class ReviewsRatings extends React.Component {
-  render(){
+  render() {
     const { classes } = this.props;
     return (
       <div className={classes.root}>
@@ -47,48 +47,42 @@ class ReviewsRatings extends React.Component {
           </Typography>
         </Grid>
         <List>
-          {rrList.map(function(){
-            return (<main>
+          {rrList.map(function (rr) {
+            return (<main key={rr.id}>
               <ListItem alignItems="flex-start">
-                <ListItemText
-                  primary={
-                    <React.Fragment>
-                      <Grid container spacing={16}>
-                        <Grid item className={classes.paddingHoritontal}>
-                          <StarIcon color="primary" fontSize="small"/>
-                          <StarIcon color="primary" fontSize="small"/>
-                          <StarIcon color="primary" fontSize="small"/>
-                          <StarIcon color="disabled" fontSize="small"/>
-                          <StarIcon color="disabled" fontSize="small"/>
-                        </Grid>
-                        <Grid item direction="row" className={classes.paddingHoritonal}>
-                          <Typography variant="subtitle1" color="textSecondary">
-                            John Davis
+                <Grid container spacing={16} direction="column">
+                  <Grid container spacing={16} direction="row">
+                    <Grid item className={classes.paddingHoritontal}>
+                      <StarIcon color="primary" fontSize="small" />
+                      <StarIcon color="primary" fontSize="small" />
+                      <StarIcon color="primary" fontSize="small" />
+                      <StarIcon color="disabled" fontSize="small" />
+                      <StarIcon color="disabled" fontSize="small" />
+                    </Grid>
+                    <Grid item className={classes.paddingHoritonal}>
+                      <Typography variant="subtitle1" color="textSecondary">
+                        John Davis
                           </Typography>
-                        </Grid>
-                        <Grid item direction="row" className={classes.paddingHoritonal}>
-                          <Typography variant="subtitle2" color="textSecondary">
-                            2 Days Ago
+                    </Grid>
+                    <Grid item className={classes.paddingHoritonal}>
+                      <Typography variant="subtitle2" color="textSecondary">
+                        2 Days Ago
                           </Typography>
-                        </Grid>
-                      </Grid>
-                    </React.Fragment>
-                  }
-                  secondary={
-                    <React.Fragment>
-                      <Grid container spacing={16}>
-                        <Grid item className={classes.paddingHoritontal}>
-                          <Typography variant="h6" color="textSecondary">
-                            Lorem borem forem dorem morem
+                    </Grid>
+                  </Grid>
+                  <Grid container spacing={16} direction="row">
+                    <Grid item className={classes.paddingHoritontal}>
+                      <Typography variant="h6" color="textSecondary">
+                        Lorem borem forem dorem morem
                           </Typography>
-                          <Typography variant="body2" color="textSecondary">
-                          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Fusce nec tellus sed augue semper porta. Mauris massa. Vestibulum lacinia arcu eget nulla. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Curabitur sodales ligula in libero. 
+                    </Grid>
+                    <Grid item className={classes.paddingHoritontal}>
+                      <Typography variant="body2" color="textSecondary">
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Fusce nec tellus sed augue semper porta. Mauris massa. Vestibulum lacinia arcu eget nulla. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Curabitur sodales ligula in libero.
                           </Typography>
-                        </Grid>
-                      </Grid>
-                    </React.Fragment>
-                  }
-                />
+                    </Grid>
+                  </Grid>
+                </Grid>
               </ListItem>
               <Divider />
             </main>)

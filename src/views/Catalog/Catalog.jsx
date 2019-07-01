@@ -90,7 +90,6 @@ class Catalog extends React.Component {
       let categoryFilterFacetQuery = ["filter.facets", encodeURIComponent(queryTxt)].join("=");
       let categoryQuery = [categoryFilterQuery, categoryFilterFacetQuery].join("&")
       query = [query, categoryQuery].join("&");
-      console.log(categoryQuery)
     }
 
     let colorFacets = selectedColorFacets ? selectedColorFacets : this.state.colorFacets;
@@ -99,7 +98,6 @@ class Catalog extends React.Component {
       let colorFacetQuery = ["filter=variants.attributes.color:", colorFacets.join('","'), ""].join('"');
       let colorQuery = [colorFilterFacetQuery, colorFacetQuery].join("&");
       query = [query, colorQuery].join("&");
-      console.log(colorQuery)
     }
 
     let sizeFacets = selectedSizeFacets ? selectedSizeFacets : this.state.sizeFacets;
@@ -108,14 +106,11 @@ class Catalog extends React.Component {
       let sizeFacetQuery = ["filter=variants.attributes.size:", sizeFacets.join('","'), ""].join('"');
       let sizeQuery = [sizeFilterFacetQuery, sizeFacetQuery].join("&");
       query = [query, sizeQuery].join("&");
-      console.log(sizeQuery)
     }
 
     let response = await fetchProductProjections(query);
     if(response.err){
-      console.log(response.err);
       if(response.err.error.error === "invalid_token"){
-        console.log("Retry fetchPP")
         return this.fetchPP();
       } else{
         // Display some error pop-up.
@@ -127,10 +122,7 @@ class Catalog extends React.Component {
   async fetchCats(){    
     let response = await fetchCategories();
     if(response.err){
-      console.log(response.err);
       if(response.err.error.error === "invalid_token"){
-        console.log("Retry fetchCats")
-        return this.fetchCats();
       } else{
         // Display some error pop-up.
       }
@@ -321,6 +313,7 @@ class Catalog extends React.Component {
                       </Typography>
                       <Typography>
                         Retail Price: 
+                      </Typography>
                         {lowerPrice === higherPrice ? (
                           <NumberFormat value={lowerPrice} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
                         ) : (
@@ -328,7 +321,6 @@ class Catalog extends React.Component {
                             <NumberFormat value={lowerPrice} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} /> to <NumberFormat value={higherPrice} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
                           </div>
                         )}
-                      </Typography>
                     </CardContent>
                     <CardActions>
                       <Button variant="contained" size="small" color="primary" className={classes.button} onClick={() => thisVar.props.history.push({pathname: '/product/' + currProduct.id, productList})}>

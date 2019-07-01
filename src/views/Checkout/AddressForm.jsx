@@ -30,7 +30,6 @@ class AddressForm extends React.Component {
   }
 
   async componentDidUpdate() {
-    console.log("AddressForm componentDidUpdate")
     const { props, state } = this;
     let { selectedAddress } = state;
     if (!selectedAddress) {

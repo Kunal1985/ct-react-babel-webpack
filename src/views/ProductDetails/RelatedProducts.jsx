@@ -79,7 +79,7 @@ class RelatedProducts extends React.Component {
 						lowerPrice = lowerPrice / 100;
 						higherPrice = higherPrice / 100;
 						return (
-							<Grid item key={currProduct.id} sm={6} md={3} lg={2} className={classes.grid} justify="center">
+							<Grid item container key={currProduct.id} sm={6} md={3} lg={2} className={classes.grid} justify="center">
 								<Card className={classes.card}>
 									<CardMedia
 										className={classes.cardMedia}
@@ -92,6 +92,7 @@ class RelatedProducts extends React.Component {
 										</Typography>
 										<Typography>
 											Retail Price:
+										</Typography>
                         {lowerPrice === higherPrice ? (
 												<NumberFormat value={lowerPrice} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
 											) : (
@@ -99,7 +100,6 @@ class RelatedProducts extends React.Component {
 														<NumberFormat value={lowerPrice} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} /> to <NumberFormat value={higherPrice} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
 													</div>
 												)}
-										</Typography>
 									</CardContent>
 									<CardActions>
 										<Button variant="contained" size="small" color="primary" className={classes.button} onClick={() => thisVar.props.history.replace({ pathname: '/product/' + currProduct.id, productList })}>
