@@ -123,7 +123,7 @@ class ProfileTabView extends React.Component {
                 id="standard-name"
                 label="Email ddress"
                 className={classNames(classes.textField, classes.email)}
-                value={currUser.email}
+                value={currUser.email ? currUser.email : " "}
                 margin="normal"
               />
             </GridItem>

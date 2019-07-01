@@ -9,6 +9,8 @@ import Modal from '@material-ui/core/Modal';
 import { addShippingToCart } from '../../utils/CommonUtils';
 import AddressSection from "../UserProfile/ProfileTab/AddressSection/AddressSection.jsx";
 import AddressSectionEdit from "../UserProfile/ProfileTab/AddressSection/AddressSectionEdit.jsx";
+import { connect } from 'react-redux';
+import { addShippingToCartAction } from '../../actions/cartActions';
 
 const styles = theme => ({
   fabMargin: {
@@ -28,26 +30,23 @@ class AddressForm extends React.Component {
   }
 
   async componentDidUpdate() {
+    console.log("AddressForm componentDidUpdate")
     const { props, state } = this;
-    console.log("AddressForm componentDidUpdate", props, state);
     let { selectedAddress } = state;
-    if(!selectedAddress){
+    if (!selectedAddress) {
       selectedAddress = props.selectedAddress
     }
     if (props.submit) {
-      let response = await addShippingToCart(selectedAddress);
-      if (response.body) {
+      this.props.addShippingToCartAction(selectedAddress);
+      let { cartFromReducer, cartErrorFromReducer } = this.props;
+      if (cartFromReducer.id) {
         props.parent.handleFormSubmit();
       }
-      if (response.err) {
+      if (cartErrorFromReducer) {
         // Display some error
       }
       // this.props.parent.handleFormSubmit();
     }
-  }
-
-  async componentDidMount() {
-    console.log("AddressForm componentDidMount", this.props);
   }
 
   handleOpen() {
@@ -65,7 +64,6 @@ class AddressForm extends React.Component {
   }
 
   handleAddressSelect(address) {
-    console.log("handleAddressSelect", address.id);
     let { parent } = this.props;
     this.setState({ selectedValue: address.id, selectedAddress: address });
     parent.handleAddressSelect(address)
@@ -75,7 +73,7 @@ class AddressForm extends React.Component {
     let thisVar = this;
     let { classes, currUser, selectedAddress } = this.props;
     let { modalOpen, selectedValue } = this.state;
-    if(!selectedValue && selectedAddress){
+    if (!selectedValue && selectedAddress) {
       selectedValue = selectedAddress.id
     }
     let noAddress = (currUser && currUser.addresses && currUser.addresses.length === 0) ? true : false;
@@ -114,4 +112,12 @@ class AddressForm extends React.Component {
   }
 }
 
-export default withStyles(styles)(AddressForm);
+const mapStatesToProps = state => ({
+  userFromReducer: state.user.currUser,
+  userErrorFromReducer: state.user.error,
+  cartFromReducer: state.cart.currCart,
+  cartErrorFromReducer: state.cart.error
+})
+
+
+export default withStyles(styles)(connect(mapStatesToProps, { addShippingToCartAction })(AddressForm));

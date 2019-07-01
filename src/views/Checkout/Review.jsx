@@ -8,6 +8,9 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Grid from '@material-ui/core/Grid';
 import NumberFormat from 'react-number-format';
 import { getCurrCartId, fetchCart, submitOrder } from '../../utils/CommonUtils';
+import { connect } from 'react-redux';
+import { fetchCartById, fetchCartFromSession, clearOldCartFromSession } from '../../actions/cartActions';
+import { submitOrderAction } from '../../actions/orderActions';
 
 const products = [
   { name: 'Product 1', desc: 'A nice thing', price: '$9.99' },
@@ -37,47 +40,69 @@ const styles = theme => ({
 });
 
 class Review extends React.Component {
-  async componentDidUpdate(){
+  componentWillMount() {
+    this.props.fetchCartFromSession();
+    let { cartFromReducer, cartErrorFromReducer } = this.props;
+    if (cartErrorFromReducer) {
+      // Display some error
+      return;
+    }
+    if (!cartFromReducer.id) {
+      this.props.fetchCartById();
+    }
+  }
+  async componentDidUpdate() {
     console.log("Review componentDidUpdate", this.props);
-    if(this.props.submit){
-      let response = await submitOrder();
-      if(response.body){
-        this.props.parent.handleFormSubmit();
-      }
-      if(response.err){
-        // Display some error
-      }
-      // this.props.parent.handleFormSubmit();
-    }
+    // let { cartFromReducer } = this.props;
+    // console.log("Cleared cart check", cartFromReducer);
+    // if (!cartFromReducer.id) {
+    //   return;
+    // }
+    // if (this.props.submit) {
+    //   this.props.submitOrderAction()
+    //   // let response = await submitOrder();
+    //   let { orderFromReducer, orderErrorFromReducer } = this.props
+    //   if (orderErrorFromReducer) {
+    //     // Display some error
+    //     return;
+    //   }
+    //   if (orderFromReducer.orderNumber) {
+    //     this.props.clearOldCartFromSession();
+    //     this.props.parent.handleFormSubmit();
+    //   }
+    //   // this.props.parent.handleFormSubmit();
+    // }
   }
-  async componentDidMount(){
+
+  async componentDidMount() {
     console.log("Review componentDidMount", this.props);
-    let currCartId = getCurrCartId();
-    if(currCartId){
-      let cartResponse = await fetchCart(getCurrCartId());
-      if (cartResponse.body) {
-        this.setState({ currCart: cartResponse.body });
-      }
-      if (cartResponse.err) {
-        // Display some error modal
-      }
-    }
+    // let currCartId = getCurrCartId();
+    // if (currCartId) {
+    //   let cartResponse = await fetchCart(getCurrCartId());
+    //   if (cartResponse.body) {
+    //     this.setState({ currCart: cartResponse.body });
+    //   }
+    //   if (cartResponse.err) {
+    //     // Display some error modal
+    //   }
+    // }
   }
-  render(){
-    const { classes } = this.props;
+  render() {
+    const { classes, cartFromReducer } = this.props;
     let grossTotal = 0;
     let subTotal = 0;
     let taxAmount = 0;
     let currCartId = getCurrCartId();
     let shippingAddress = {};
-    if (this.state && this.state.currCart) {
-      grossTotal = this.state.currCart.taxedPrice ? this.state.currCart.taxedPrice.totalGross.centAmount / 100 : this.state.currCart.totalPrice.centAmount / 100;
-      subTotal = this.state.currCart.taxedPrice ? this.state.currCart.taxedPrice.totalNet.centAmount / 100 : grossTotal;
+    let currCart = cartFromReducer;
+    if (currCart.id) {
+      grossTotal = currCart.taxedPrice ? currCart.taxedPrice.totalGross.centAmount / 100 : currCart.totalPrice.centAmount / 100;
+      subTotal = currCart.taxedPrice ? currCart.taxedPrice.totalNet.centAmount / 100 : grossTotal;
       taxAmount = grossTotal - subTotal;
-      shippingAddress = this.state.currCart.shippingAddress ? this.state.currCart.shippingAddress:{};
+      shippingAddress = currCart.shippingAddress ? currCart.shippingAddress : {};
       shippingAddress.fullAddress = [shippingAddress.streetNumber, shippingAddress.streetName, shippingAddress.city, [shippingAddress.country, shippingAddress.postalCode].join("-")].join(', ');
     }
-    let lineItems = (this.state && this.state.currCart && this.state.currCart.lineItems) ? this.state.currCart.lineItems : [];
+    let lineItems = (currCart && currCart.lineItems) ? currCart.lineItems : [];
     return (
       <React.Fragment>
         <Typography variant="h6" gutterBottom>
@@ -86,19 +111,19 @@ class Review extends React.Component {
         <List disablePadding>
           {lineItems.map(currLineItem => (
             <ListItem className={classes.listItem} key={currLineItem.id}>
-              <ListItemText primary={currLineItem.name.en} secondary={currLineItem.quantity}/>
+              <ListItemText primary={currLineItem.name.en} secondary={currLineItem.quantity} />
               <Typography variant="body2">
                 <NumberFormat value={currLineItem.totalPrice.centAmount / 100} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
               </Typography>
             </ListItem>
-          ))}          
+          ))}
           <ListItem className={classes.listItem}>
             <ListItemText primary="Sub-Total" />
             <Typography variant="subtitle1" className={classes.total}>
               <NumberFormat value={subTotal} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
             </Typography>
           </ListItem>
-          
+
           <ListItem className={classes.listItem}>
             <ListItemText primary="Tax" />
             <Typography variant="subtitle1" className={classes.total}>
@@ -123,11 +148,20 @@ class Review extends React.Component {
         </Grid>
       </React.Fragment>
     );
-  }  
+  }
 }
 
 Review.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(Review);
+const mapStatesToProps = state => ({
+  userFromReducer: state.user.currUser,
+  userErrorFromReducer: state.user.error,
+  cartFromReducer: state.cart.currCart,
+  cartErrorFromReducer: state.cart.error,
+  orderFromReducer: state.lastOrder.lastOrderPlaced,
+  orderErrorFromReducer: state.lastOrder.error,
+})
+
+export default withStyles(styles)(connect(mapStatesToProps, { fetchCartById, fetchCartFromSession, clearOldCartFromSession, submitOrderAction })(Review));

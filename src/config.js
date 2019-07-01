@@ -18,6 +18,5 @@ module.exports = function () {
   //LOAD FROM ENV VARIABLES
   config_data.connection_string = process.env.connection_string
   config_data.port = process.env.port || config_data.port
-  console.log("config_data", config_data)
   return config_data
 }

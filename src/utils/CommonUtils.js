@@ -99,6 +99,10 @@ let setOrderNumber = function (orderId) {
   localStorage.setItem("lastOrderNumber", orderId);
 }
 
+let generateOrderNumber = function () {
+  return "ORD" + Math.floor(Math.random() * 900000) + 100000;
+}
+
 let invokeAuthAPI = function () {
   let options = {
     method: "POST",
@@ -117,7 +121,7 @@ let invokeAuthAPI = function () {
       setAuthToken(body['access_token']);
     })
     .catch(function (err) {
-      console.log("Auth Error Response", err);
+      // Error Handling
     });
 }
 
@@ -125,7 +129,7 @@ let signIn = function (credentials) {
   let currCartId = getCurrCartId();
   let currCustomerId = getCurrCustomerId();
   let cartCustomer = getCurrCartCustomer();
-  if(!cartCustomer && currCartId) {
+  if (!cartCustomer && currCartId) {
     credentials.anonymousCartId = currCartId;
   }
   let options = {
@@ -140,7 +144,6 @@ let signIn = function (credentials) {
   }
   return rp(options)
     .then(function (body) {
-      console.log("Login Success Response", body);
       setCurrCustomerId(body.customer.id);
       if (body.cart) {
         setCurrCartId(body.cart.id);
@@ -150,7 +153,7 @@ let signIn = function (credentials) {
       return { body }
     })
     .catch(function (err) {
-      console.log("Login Error Response", err);
+      // Error Handling
       return { err }
     });
 }
@@ -159,10 +162,9 @@ let signUp = function (credentials) {
   let currCartId = getCurrCartId();
   let currCustomerId = getCurrCustomerId();
   let cartCustomer = getCurrCartCustomer();
-  if(!cartCustomer && currCartId) {
+  if (!cartCustomer && currCartId) {
     credentials.anonymousCartId = currCartId;
   }
-  console.log("signUp", credentials);
   let options = {
     method: 'POST',
     url: `${API_BASE_URL}/customers`,
@@ -175,7 +177,6 @@ let signUp = function (credentials) {
   }
   return rp(options)
     .then(function (body) {
-      console.log("CreateCustomer Success Response", body);
       setCurrCustomerId(body.customer.id);
       if (body.cart) {
         setCurrCartId(body.cart.id);
@@ -185,7 +186,7 @@ let signUp = function (credentials) {
       return { body }
     })
     .catch(function (err) {
-      console.log("CreateCustomer Error Response", err);
+      // Error Handling
       return { err }
     });
 }
@@ -202,11 +203,10 @@ let fetchCustomer = function (customerId) {
   }
   return rp(options)
     .then(function (body) {
-      console.log("fetchCustomer Success Response", body);
       return { body };
     })
     .catch(function (err) {
-      console.log("fetchCustomer Error Response", err);
+      // Error Handling
       return { err }
     });
 }
@@ -225,11 +225,10 @@ let updateCustomer = function (requestBody) {
   }
   return rp(options)
     .then(function (body) {
-      console.log(`updateCustomer Success Response`, requestBody, body);
       return { body };
     })
     .catch(function (err) {
-      console.log(`updateCustomer Error Response`, requestBody, err);
+      // Error Handling
       return { err }
     });
 }
@@ -237,12 +236,12 @@ let updateCustomer = function (requestBody) {
 let fetchCustomerOrders = function (customerId, queryParams) {
   let customerParam = ["where", encodeURIComponent(`customerId="${customerId}"`)].join("=");
   let queryParam = "";
-  if(queryParams){
+  if (queryParams) {
     let limitParam = ["limit", queryParams.limit].join("=");
     let offsetParam = ["offset", queryParams.offset].join("=");
     let sortParam = ["sort", encodeURIComponent(queryParams.sort)].join("=");
     queryParam = [customerParam, limitParam, offsetParam, sortParam].join("&");
-  } else{
+  } else {
     queryParam = customerParam
   }
   let apiUrl = `${API_BASE_URL}/orders?${queryParam}`;
@@ -257,11 +256,10 @@ let fetchCustomerOrders = function (customerId, queryParams) {
   }
   return rp(options)
     .then(function (body) {
-      console.log("fetchCustomerOrders Success Response", body);
       return { body };
     })
     .catch(function (err) {
-      console.log("fetchCustomerOrders Error Response", err);
+      // Error Handling
       return { err }
     });
 }
@@ -269,12 +267,12 @@ let fetchCustomerOrders = function (customerId, queryParams) {
 let fetchCustomerShoppingLists = function (customerId, queryParams) {
   let customerParam = ["where", encodeURIComponent(`customer(id="${customerId}")`)].join("=");
   let queryParam = "";
-  if(queryParams){
+  if (queryParams) {
     let limitParam = ["limit", queryParams.limit].join("=");
     let offsetParam = ["offset", queryParams.offset].join("=");
     let sortParam = ["sort", encodeURIComponent(queryParams.sort)].join("=");
     queryParam = [customerParam, limitParam, offsetParam, sortParam].join("&");
-  } else{
+  } else {
     queryParam = customerParam
   }
   let apiUrl = `${API_BASE_URL}/shopping-lists?${queryParam}`;
@@ -289,11 +287,10 @@ let fetchCustomerShoppingLists = function (customerId, queryParams) {
   }
   return rp(options)
     .then(function (body) {
-      console.log("fetchCustomerShoppingLists Success Response", body);
       return { body };
     })
     .catch(function (err) {
-      console.log("fetchCustomerShoppingLists Error Response", err);
+      // Error Handling
       return { err }
     });
 }
@@ -313,14 +310,14 @@ let fetchProducts = function () {
       return { body }
     })
     .catch(function (err) {
-      console.log("fetchProducts Error Response", err);
+      // Error Handling
       return { err }
     });
 }
 
 let fetchProductProjections = function (filterQuery) {
   let apiUrl = `${API_BASE_URL}/product-projections/search?facet=variants.attributes.color&facet=variants.attributes.size&facet=categories.id`;
-  if(filterQuery){    
+  if (filterQuery) {
     apiUrl = [apiUrl, filterQuery].join("");
   }
   let options = {
@@ -337,7 +334,7 @@ let fetchProductProjections = function (filterQuery) {
       return { body }
     })
     .catch(function (err) {
-      console.log("fetchProductProjections Error Response", err);
+      // Error Handling
       return { err }
     });
 }
@@ -357,7 +354,7 @@ let fetchProductById = function (productId) {
       return { body }
     })
     .catch(function (err) {
-      console.log("fetchCategories Error Response", err);
+      // Error Handling
       return { err }
     });
 }
@@ -377,7 +374,7 @@ let fetchCategories = function () {
       return { body }
     })
     .catch(function (err) {
-      console.log("fetchCategories Error Response", err);
+      // Error Handling
       return { err }
     });
 }
@@ -394,11 +391,10 @@ let fetchList = function (listId) {
   }
   return rp(options)
     .then(function (body) {
-      console.log("ListFetch Success Response", body);
       return { body };
     })
     .catch(function (err) {
-      console.log("ListFetch Error Response", err);
+      // Error Handling
       return { err }
     });
 }
@@ -428,13 +424,12 @@ let createList = function (listName) {
   }
   return rp(options)
     .then(function (body) {
-      console.log("CreateList Success Response", body);
       setCurrListId(body.id);
       setCurrListVersion(body.version);
       return { body };
     })
     .catch(function (err) {
-      console.log("CreateList Error Response", err);
+      // Error Handling
       return { err };
     });
 }
@@ -451,11 +446,10 @@ let removeList = function (listId, listVersion) {
   }
   return rp(options)
     .then(function (body) {
-      console.log("RemoveList Success Response", body);
       return { body };
     })
     .catch(function (err) {
-      console.log("RemoveList Error Response", err);
+      // Error Handling
       return { err }
     });
 }
@@ -480,12 +474,11 @@ let addItemToList = function (currSku) {
   }
   return rp(options)
     .then(function (body) {
-      console.log("AddItemToList Success Response", body);
       setCurrListVersion(body.version);
       return { body };
     })
     .catch(function (err) {
-      console.log("AddItemToList Error Response", err);
+      // Error Handling
       return { err };
     });
 }
@@ -509,13 +502,12 @@ let removeItemFromList = function (shoppinglistId, shoppingLitVersion, lineItemI
   }
   return rp(options)
     .then(function (body) {
-      console.log("RemoveItemFromList Success Response", body);
       setCurrCartVersion(body.version);
       setCurrCartCustomer(body.customerId);
       return { body };
     })
     .catch(function (err) {
-      console.log("RemoveItemFromList Error Response", err);
+      // Error Handling
       return { err };
     });
 }
@@ -532,13 +524,12 @@ let fetchCart = function (cartId) {
   }
   return rp(options)
     .then(function (body) {
-      console.log("CartFetch Success Response", body);
       setCurrCartVersion(body.version);
       setCurrCartCustomer(body.customerId);
       return { body };
     })
     .catch(function (err) {
-      console.log("CartFetch Error Response", err);
+      // Error Handling
       return { err }
     });
 }
@@ -563,14 +554,13 @@ let createCart = function () {
   }
   return rp(options)
     .then(function (body) {
-      console.log("createCart Success Response", body);
       setCurrCartId(body.id);
       setCurrCartVersion(body.version);
       setCurrCartCustomer(body.customerId);
       return { body };
     })
     .catch(function (err) {
-      console.log("createCart Error Response", err);
+      // Error Handling
       return { err };
     });
 }
@@ -595,13 +585,12 @@ let addItemToCart = function (currSku, quantity) {
   }
   return rp(options)
     .then(function (body) {
-      console.log("AddToCart Success Response", body);
       setCurrCartVersion(body.version);
       setCurrCartCustomer(body.customerId);
       return { body };
     })
     .catch(function (err) {
-      console.log("AddToCart Error Response", err);
+      // Error Handling
       return { err };
     });
 }
@@ -625,13 +614,12 @@ let removeItemFromCart = function (lineItemId) {
   }
   return rp(options)
     .then(function (body) {
-      console.log("RemoveItemFromCart Success Response", body);
       setCurrCartVersion(body.version);
       setCurrCartCustomer(body.customerId);
       return { body };
     })
     .catch(function (err) {
-      console.log("RemoveItemFromCart Error Response", err);
+      // Error Handling
       return { err };
     });
 }
@@ -656,13 +644,12 @@ let addShippingToCart = function (shippingAddress) {
   }
   return rp(options)
     .then(function (body) {
-      console.log("addShippingToCart Success Response", body);
       setCurrCartVersion(body.version);
       setCurrCartCustomer(body.customerId);
       return { body };
     })
     .catch(function (err) {
-      console.log("addShippingToCart Error Response", err);
+      // Error Handling
       return { err };
     });
 }
@@ -678,24 +665,24 @@ let submitOrder = function () {
     json: true,
     body: {
       "id": getCurrCartId(),
-      "version": getCurrCartVersion()
+      "version": getCurrCartVersion(),
+      "orderNumber": generateOrderNumber()
     }
   }
   return rp(options)
     .then(function (body) {
-      console.log("submitOrder Success Response", body);
-      setOrderNumber(body.id);
+      setOrderNumber(body.orderNumber);
       removeCurrCartId();
       removeCurrCartVersion();
       return { body };
     })
     .catch(function (err) {
-      console.log("submitOrder Error Response", err);
+      // Error Handling
       return { err };
     });
 }
 
-let getModalStyle = function(){
+let getModalStyle = function () {
   const top = 50;
   const left = 50;
 
@@ -738,7 +725,7 @@ export {
   updateCustomer,
   getModalStyle,
   getCurrListId,
-  setCurrListId, 
+  setCurrListId,
   createList,
   addItemToList,
   getCurrListVersion,

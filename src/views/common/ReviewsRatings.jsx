@@ -13,7 +13,7 @@ import StarIcon from '@material-ui/icons/Star';
 const styles = theme => ({
   root: {
     width: '100%',
-    backgroundColor: theme.palette.background.paper
+    backgroundColor: "#F5F2EA"
   },
   inline: {
     display: 'inline',

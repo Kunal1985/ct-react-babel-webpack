@@ -52,6 +52,10 @@ const styles = theme => ({
     maxWidth: '100%',
     maxHeight: '100%',
   },
+  strikeThrough: {
+    textDecoration: "line-through",
+    color: "lightgray"
+  }
 });
 
 class ShoppingCartView extends React.Component {
@@ -66,7 +70,7 @@ class ShoppingCartView extends React.Component {
     let grossTotal = 0;
     let subTotal = 0;
     let taxAmount = 0;
-    let currOrderId = currOrder.id;
+    let currOrderId = currOrder.orderNumber;
     if (currOrder) {
       grossTotal = currOrder.taxedPrice ? currOrder.taxedPrice.totalGross.centAmount / 100 : currOrder.totalPrice.centAmount / 100;
       subTotal = currOrder.taxedPrice ? currOrder.taxedPrice.totalNet.centAmount / 100 : grossTotal;
@@ -96,12 +100,17 @@ class ShoppingCartView extends React.Component {
                       <TableRow>
                         <TableCell><Typography variant="subtitle1">Item</Typography></TableCell>
                         <TableCell align="right"><Typography variant="subtitle1">Qty.</Typography></TableCell>
-                        <TableCell align="right"><Typography variant="subtitle1">Price</Typography></TableCell>
+                        <TableCell align="right"><Typography variant="subtitle1">UNIT price</Typography></TableCell>
+                        <TableCell align="right"><Typography variant="subtitle1">TOTAL price</Typography></TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {currOrder.lineItems.map(function(row){
-                        let displayImage = row.variant.images && row.variant.images.length>0 ? row.variant.images[0].url : "/assets/img/no-image.jpg"
+                      {currOrder.lineItems.map(function (row) {
+                        let displayImage = row.variant.images && row.variant.images.length > 0 ? row.variant.images[0].url : "/assets/img/no-image.jpg";
+                        let skuPrice = row.price;
+                        let isDiscounted = skuPrice && skuPrice.discounted ? true : false;
+                        let discountedPrice = isDiscounted ? skuPrice.discounted.value.centAmount / 100 : skuPrice.value.centAmount / 100;
+                        let listPrice = skuPrice && skuPrice.value.centAmount / 100;
                         return (
                           <TableRow key={row.id}>
                             <TableCell>
@@ -128,6 +137,12 @@ class ShoppingCartView extends React.Component {
                             </TableCell>
                             <TableCell align="right">
                               <Typography variant="subtitle1">
+                                {isDiscounted && <NumberFormat value={listPrice} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} className={classes.strikeThrough} />}
+                                <NumberFormat value={discountedPrice} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
+                              </Typography>
+                            </TableCell>
+                            <TableCell align="right">
+                              <Typography variant="subtitle1">
                                 <NumberFormat value={row.totalPrice.centAmount / 100} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
                               </Typography>
                             </TableCell>
@@ -136,7 +151,7 @@ class ShoppingCartView extends React.Component {
                       })}
 
                       <TableRow>
-                        <TableCell rowSpan={3} />
+                        <TableCell rowSpan={3} colSpan={2}/>
                         <TableCell ><Typography variant="subtitle1">Subtotal</Typography></TableCell>
                         <TableCell align="right">
                           <Typography variant="subtitle1">
@@ -155,7 +170,7 @@ class ShoppingCartView extends React.Component {
                       <TableRow>
                         <TableCell ><Typography variant="subtitle1">Total</Typography></TableCell>
                         <TableCell align="right">
-                          <Typography variant="subtitle1">
+                          <Typography variant="h6">
                             <NumberFormat value={grossTotal} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
                           </Typography>
                         </TableCell>
@@ -164,8 +179,8 @@ class ShoppingCartView extends React.Component {
                   </Table>
                 </Paper>
               ) : (
-                "May not enter this section!"
-              )}
+                    "May not enter this section!"
+                  )}
             </CardBody>
           </Card>
         </Paper>

@@ -19,8 +19,9 @@ import withStyles from '@material-ui/core/styles/withStyles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 
 import NumberFormat from 'react-number-format';
-import { getCurrCustomerId, getCurrCartId, getAuthToken, fetchCart, createCart, setCurrCartId, setCurrCartVersion, removeItemFromCart } from '../../utils/CommonUtils';
-
+import { connect } from 'react-redux';
+import { fetchCartById, fetchCartFromSession, removeItemFromCartAction } from '../../actions/cartActions';
+import {clearOrderAction} from '../../actions/orderActions';
 const styles = theme => ({
   layout: {
     width: 'auto',
@@ -71,6 +72,10 @@ const styles = theme => ({
   },
   cardActionBtn: {
     display: "block"
+  },
+  strikeThrough: {
+    textDecoration: "line-through",
+    color: "lightgray"
   }
 });
 
@@ -78,61 +83,50 @@ class ShoppingCart extends React.Component {
   constructor(props) {
     super(props);
     this.state = {};
-    this.fetchCurrentCart = this.fetchCurrentCart.bind(this);
     this.removeItem = this.removeItem.bind(this);
+    this.moveToCheckout = this.moveToCheckout.bind(this);
   }
 
-  componentDidMount() {
-    this.fetchCurrentCart();
-  }
-
-  async fetchCurrentCart() {
-    let currCartId = getCurrCartId();
-    if (!currCartId) {
-      let createCartResp = await createCart();
-      if (createCartResp.body) {
-        setCurrCartId(createCartResp.body.id);
-        setCurrCartVersion(createCartResp.body.version);
-        this.setState({ currCart: createCartResp.body });
-      }
-      if (createCartResp.err) {
-        // Display some error modal
-      }
-    } else {
-      let cartResponse = await fetchCart(getCurrCartId());
-      if (cartResponse.body) {
-        this.setState({ currCart: cartResponse.body });
-      }
-      if (cartResponse.err) {
-        // Display some error modal
-      }
+  componentWillMount() {
+    this.props.fetchCartFromSession();
+    let { cartFromReducer, errorFromReducer } = this.props;
+    if (errorFromReducer) {
+      // Display some error
+      return;
     }
+    if (!cartFromReducer.id) {
+      this.props.fetchCartById();
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    //
   }
 
   async removeItem(itemId) {
-    let response = await removeItemFromCart(itemId);
-    if (response.body) {
-      this.fetchCurrentCart();
-    }
-    if (response.err) {
-      // Display some error popup
-    }
+    this.props.removeItemFromCartAction(itemId)
+  }
+
+  moveToCheckout(){
+    this.props.clearOrderAction();
+    this.props.history.push({ pathname: 'checkout', currCart: this.props.cartFromReducer })
   }
 
   render() {
-    const { classes } = this.props;
+    const { classes, cartFromReducer } = this.props;
     let thisVar = this;
     let grossTotal = 0;
     let subTotal = 0;
     let taxAmount = 0;
-    let currCartId = getCurrCartId();
-    let currCart = this.state && this.state.currCart;
-    if (currCart) {
+    let currCartId = "";
+    let currCart = cartFromReducer
+    if (currCart.id) {
+      currCartId = currCart.id;
       grossTotal = currCart.taxedPrice ? currCart.taxedPrice.totalGross.centAmount / 100 : currCart.totalPrice.centAmount / 100;
       subTotal = currCart.taxedPrice ? currCart.taxedPrice.totalNet.centAmount / 100 : grossTotal;
       taxAmount = grossTotal - subTotal;
     }
-    let emptyCart = currCart && currCart.lineItems && currCart.lineItems.length === 0;
+    let emptyCart = !currCart.id || (currCart && currCart.lineItems && currCart.lineItems.length === 0);
     return (
       <React.Fragment>
         <CssBaseline />
@@ -140,7 +134,7 @@ class ShoppingCart extends React.Component {
           <Card>
             <CardHeader color="primary">
               <h4 className={classes.cardTitleWhite}>Shopping Cart</h4>
-              <p className={classes.cardCategoryWhite}>Order# {this.state && currCart && currCart.id}</p>
+              <p className={classes.cardCategoryWhite}>Order# {currCartId}</p>
             </CardHeader>
             <CardBody key={currCartId}>
               {emptyCart ? (
@@ -163,7 +157,11 @@ class ShoppingCart extends React.Component {
                     </TableHead>
                     <TableBody>
                       {currCart.lineItems.map(function (row) {
-                        let displayImage = row.variant.images && row.variant.images.length > 0 ? row.variant.images[0].url : "/assets/img/no-image.jpg"
+                        let displayImage = row.variant.images && row.variant.images.length > 0 ? row.variant.images[0].url : "/assets/img/no-image.jpg";
+                        let skuPrice = row.price;
+                        let isDiscounted = skuPrice && skuPrice.discounted ? true : false;
+                        let discountedPrice = isDiscounted ? skuPrice.discounted.value.centAmount / 100 : skuPrice.value.centAmount / 100;
+                        let listPrice = skuPrice && skuPrice.value.centAmount / 100;
                         return (
                           <TableRow key={row.id}>
                             <TableCell>
@@ -180,7 +178,7 @@ class ShoppingCart extends React.Component {
                                     </Typography>
                                     <Typography color="textSecondary">ID: {row.id}</Typography>
                                     <Typography color="textSecondary" variant="subtitle2">Attributes</Typography>
-                                    {row.variant.attributes && row.variant.attributes.map(function(attribute){
+                                    {row.variant.attributes && row.variant.attributes.map(function (attribute) {
                                       return <Typography color="textSecondary" key={attribute.name}>{attribute.name}: {attribute.value}</Typography>
                                     })}
                                   </Grid>
@@ -199,7 +197,8 @@ class ShoppingCart extends React.Component {
                             </TableCell>
                             <TableCell align="right">
                               <Typography variant="subtitle1">
-                                <NumberFormat value={row.price.value.centAmount / 100} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
+                                {isDiscounted && <NumberFormat value={listPrice} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} className={classes.strikeThrough} />}
+                                <NumberFormat value={discountedPrice} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
                               </Typography>
                             </TableCell>
                             <TableCell align="right">
@@ -245,7 +244,7 @@ class ShoppingCart extends React.Component {
             </CardBody>
             {!emptyCart &&
               <CardActions className={classes.cardActionBtn}>
-                <Button variant="contained" size="small" color="primary" className={classes.button} onClick={() => this.props.history.push({pathname: 'checkout', currCart: currCart})}>
+                <Button variant="contained" size="small" color="primary" className={classes.button} onClick={this.moveToCheckout}>
                   Checkout
                 </Button>
               </CardActions>
@@ -257,4 +256,9 @@ class ShoppingCart extends React.Component {
   }
 }
 
-export default withStyles(styles)(ShoppingCart);
+const mapStatesToProps = state => ({
+  cartFromReducer: state.cart.currCart,
+  errorFromReducer: state.cart.error,
+})
+
+export default withStyles(styles)(connect(mapStatesToProps, { fetchCartById, fetchCartFromSession, removeItemFromCartAction, clearOrderAction })(ShoppingCart));

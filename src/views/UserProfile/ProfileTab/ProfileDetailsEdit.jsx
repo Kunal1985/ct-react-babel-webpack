@@ -7,6 +7,8 @@ import Button from '@material-ui/core/Button';
 import GridItem from "components/Grid/GridItem.jsx";
 import GridContainer from "components/Grid/GridContainer.jsx";
 import { getModalStyle, updateCustomer } from "../../../utils/CommonUtils";
+import { connect } from 'react-redux';
+import { updateUserAction } from '../../../actions/userActions'
 
 const styles = theme => ({
   paper: {
@@ -32,42 +34,43 @@ class ProfileDetailsEdit extends React.Component {
     this.handleChange = this.handleChange.bind(this);
   }
 
-  async saveDetails() {
-    let { parent } = this.props;
-    let { currUser } = this.state;
-    let { firstName, lastName } = currUser;
-    console.log("saveDetails", firstName, lastName);
-    let requestBody = {
-      version: currUser.version,
-      actions: [{
-        action: "setFirstName",
-        firstName
-      },{
-        action: "setLastName",
-        lastName
-      }]
-    }
-    let currParent = parent.props.parent.props.parent;
-    console.log(currParent);
-    let response = await updateCustomer(requestBody);
-    if(response.body){
-      currParent.fetchCustomerDetails(response.body.id);
-      parent.handlePDModalClose();
-    } else{
-      // Display some error message.
-    }
+  handleChange = name => event => {
+    let currUser = this.state.currUser;
+    currUser[name] = event.target.value;
+    this.setState({ currUser: currUser });
   }
 
   cancelSaveDetails() {
     let { parent } = this.props;
     parent.handlePDModalClose();
-    console.log("cancelSaveDetails");
   }
 
-  handleChange = name => event => {
-    let currUser = this.state.currUser;
-    currUser[name] = event.target.value;
-    this.setState({ currUser: currUser });
+  async saveDetails() {
+    let { parent } = this.props;
+    let { currUser } = this.state;
+    let { firstName, lastName } = currUser;
+    let requestBody = {
+      version: currUser.version,
+      actions: [{
+        action: "setFirstName",
+        firstName
+      }, {
+        action: "setLastName",
+        lastName
+      }]
+    }
+    this.props.updateUserAction(requestBody);
+  }
+
+  componentWillReceiveProps(nextProps){
+    let { userFromReducer, errorFromReducer, parent } = nextProps;
+    if (errorFromReducer) {
+      // Display some error popup.
+      return;
+    }
+    if (userFromReducer.id) {
+      parent.handlePDModalClose();
+    }
   }
 
   render() {
@@ -113,4 +116,9 @@ class ProfileDetailsEdit extends React.Component {
   }
 }
 
-export default withStyles(styles)(ProfileDetailsEdit);
+const mapStatesToProps = state => ({
+  userFromReducer: state.user.currUser,
+  errorFromReducer: state.user.error
+})
+
+export default withStyles(styles)(connect(mapStatesToProps, { updateUserAction })(ProfileDetailsEdit));

@@ -6,7 +6,9 @@ import Button from '@material-ui/core/Button';
 // core components
 import GridItem from "components/Grid/GridItem.jsx";
 import GridContainer from "components/Grid/GridContainer.jsx";
-import { updateCustomer, getModalStyle } from "../../../../utils/CommonUtils";
+import { getModalStyle } from "../../../../utils/CommonUtils";
+import { connect } from 'react-redux';
+import { updateUserAction } from '../../../../actions/userActions'
 
 const styles = theme => ({
   paper: {
@@ -31,13 +33,25 @@ class AddressSectionEdit extends React.Component {
     this.handleChange = this.handleChange.bind(this);
   }
 
-  async saveAddress(){
+  handleChange = name => event => {
+    let address = this.state.address;
+    address[name] = event.target.value;
+    this.setState({ address: address });
+  }
+
+  cancelSaveAddress() {
+    let { parent } = this.props;
+    parent.handleClose();
+    console.log("cancelSaveAddress");
+  }
+
+  async saveAddress() {
     let { currUser, parent, ancestor } = this.props;
     let currAddress = this.props.address;
     let { address } = this.state;
     let requestBody;
     let currParent;
-    if(currAddress){
+    if (currAddress) {
       requestBody = {
         version: currUser.version,
         actions: [{
@@ -46,12 +60,7 @@ class AddressSectionEdit extends React.Component {
           address: address
         }]
       }
-      if(parent.props.parent.name === "AddressForm"){
-        currParent = parent.props.parent.props.parent;
-      } else{
-        currParent = parent.props.parent.props.parent.props.parent;
-      }
-    } else{
+    } else {
       requestBody = {
         version: currUser.version,
         actions: [{
@@ -59,37 +68,24 @@ class AddressSectionEdit extends React.Component {
           address: address
         }]
       }
-      if(parent.name === "AddressForm"){
-        currParent = parent.props.parent; 
-      } else{
-        currParent = parent.props.parent.props.parent;
-      }
     }
-    console.log(currParent);
-    let response = await updateCustomer(requestBody);
-    if(response.body){
-      currParent.fetchCustomerDetails(response.body.id);
+    this.props.updateUserAction(requestBody);    
+  }
+
+  componentWillReceiveProps(nextProps){
+    let { userFromReducer, errorFromReducer, parent } = nextProps;
+    if (errorFromReducer) {
+      // Display some error popup.
+      return;
+    }
+    if (userFromReducer.id) {
       parent.handleClose();
-    } else{
-      // Display some error message.
+      return;
     }
-    console.log("saveAddress", address);
-  }
-
-  cancelSaveAddress(){
-    let {parent} = this.props;
-    parent.handleClose();
-    console.log("cancelSaveAddress");
-  }
-
-  handleChange = name => event => {
-    let address = this.state.address;
-    address[name] = event.target.value;
-    this.setState({address: address});
   }
 
   render() {
-    const { classes, currUser, parent } = this.props;
+    const { classes } = this.props;
     const { address } = this.state;
     let modalStyle = this.state.modalStyle;
     return (
@@ -114,7 +110,7 @@ class AddressSectionEdit extends React.Component {
               margin="normal"
               onChange={this.handleChange('lastName')}
             />
-          </GridItem>  
+          </GridItem>
           <GridItem xs={12} sm={12} md={6}>
             <TextField
               id="streetNumber"
@@ -191,4 +187,9 @@ class AddressSectionEdit extends React.Component {
   }
 }
 
-export default withStyles(styles)(AddressSectionEdit);
+const mapStatesToProps = state => ({
+  userFromReducer: state.user.currUser,
+  errorFromReducer: state.user.error
+})
+
+export default withStyles(styles)(connect(mapStatesToProps, {updateUserAction})(AddressSectionEdit));

@@ -331,7 +331,7 @@ class Catalog extends React.Component {
                       </Typography>
                     </CardContent>
                     <CardActions>
-                      <Button variant="contained" size="small" color="primary" className={classes.button} onClick={() => thisVar.props.history.push('/product/' + currProduct.id)}>
+                      <Button variant="contained" size="small" color="primary" className={classes.button} onClick={() => thisVar.props.history.push({pathname: '/product/' + currProduct.id, productList})}>
                         Product Details
                       </Button>
                     </CardActions>

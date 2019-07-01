@@ -216,7 +216,7 @@ class MyOrdersTab extends React.Component {
                   return (
                     <TableRow hover key={row.id}>
                       <TableCell component="th" scope="row" >
-                        <Link component="button" variant="subtitle1" onClick={() => thisVar.handleOpenModal(row)}>{row.id}</Link>
+                        <Link component="button" variant="subtitle1" onClick={() => thisVar.handleOpenModal(row)}>{row.orderNumber}</Link>
                       </TableCell>
                       <TableCell align="right">{row.orderState}</TableCell>
                       <TableCell align="right">

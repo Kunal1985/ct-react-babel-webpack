@@ -1,4 +1,5 @@
 import React from "react";
+import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import CssBaseline from '@material-ui/core/CssBaseline';
 // @material-ui/core components
@@ -13,13 +14,13 @@ import ShopRounded from '@material-ui/icons/ShoppingCart';
 import ShoppingBasket from '@material-ui/icons/ShoppingBasket';
 // core components
 import Card from "components/Card/Card.jsx";
-import CardHeader from "components/Card/CardHeader.jsx";
 import CardBody from "components/Card/CardBody.jsx";
 
-import { getCurrCustomerId, fetchCustomer, fetchCustomerOrders, fetchCustomerShoppingLists } from "../../utils/CommonUtils";
+import { getCurrCustomerId, fetchCustomer } from "../../utils/CommonUtils";
 import ProfileTab from "./ProfileTab/ProfileTab.jsx";
 import MyOrdersTab from "./MyOrdersTab.jsx";
 import MyShoppingListsTab from "./MyShoppingListsTab.jsx";
+import { fetchUserById, fetchUserFromSession } from '../../actions/userActions'
 
 function TabContainer(props) {
   return (
@@ -73,26 +74,25 @@ class UserProfile extends React.Component {
     this.handleChange = this.handleChange.bind(this);
   }
 
-  async componentDidMount() {
+  componentWillMount() {
     let currUserId = getCurrCustomerId();
     if (!currUserId) {
       this.props.history.push("/login");
       return;
     }
-    this.fetchCustomerDetails(currUserId);
+    this.props.fetchUserFromSession();
+    let { userFromReducer, errorFromReducer } = this.props;
+    if (errorFromReducer) {
+      // Display some error
+      return;
+    }
+    if (!userFromReducer.id) {
+      this.props.fetchUserById(currUserId);
+    }
   }
 
-  async fetchCustomerDetails(userId) {
-    let response = await fetchCustomer(userId);
-    if (response.body) {
-      this.setState({
-        currUser: response.body,
-        udpateProfile: false
-      });
-    }
-    if (response.err) {
-      // Display some error modal
-    }
+  componentWillReceiveProps(nextProps) {
+    console.log("UserProfile: componentWillReceiveProps")
   }
 
   handleChange(event, newValue) {
@@ -102,9 +102,9 @@ class UserProfile extends React.Component {
   }
 
   render() {
-    const { classes } = this.props;
-    let { value, currUser } = this.state;
-    console.log(currUser);
+    const { classes, userFromReducer } = this.props;
+    let { value } = this.state;
+    let currUser = userFromReducer;
     let userFullName = currUser ? [currUser.firstName, currUser.lastName].join(" ") : "";
     let currUserId = currUser ? currUser.id : "";
     return (
@@ -139,4 +139,9 @@ class UserProfile extends React.Component {
   }
 }
 
-export default withStyles(styles)(UserProfile);
+const mapStatesToProps = state => ({
+  userFromReducer: state.user.currUser,
+  errorFromReducer: state.user.error
+})
+
+export default withStyles(styles)(connect(mapStatesToProps, { fetchUserById, fetchUserFromSession })(UserProfile));

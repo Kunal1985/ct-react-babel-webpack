@@ -16,12 +16,11 @@ const styles = theme => ({
     width: 'auto',
     marginLeft: theme.spacing.unit * 3,
     marginRight: theme.spacing.unit * 3,
-    [theme.breakpoints.up(900 + theme.spacing.unit * 3 * 2)]: {
-      width: 900,
-      marginLeft: 'auto',
-      marginRight: 'auto',
-    },
+    textAlign: "center"
   },
+  mainGrid: {
+    width: "100%"
+  }
 });
 
 const footers = [
@@ -49,8 +48,8 @@ class Footer extends React.Component {
     return (
       <React.Fragment>
         <CssBaseline />
-        <footer className={classNames(classes.footer, classes.layout)}>
-          <Grid container spacing={32} justify="space-evenly">
+        <footer className={classNames(classes.footer, classes.layout)} >
+          <Grid container spacing={24} justify="space-evenly" className={classes.mainGrid}>
             {footers.map(footer => (
               <Grid item xs key={footer.title}>
                 <Typography variant="h6" color="textPrimary" gutterBottom>

@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import withStyles from '@material-ui/core/styles/withStyles';
+import { withRouter } from 'react-router-dom';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -21,6 +22,10 @@ import StarIcon from '@material-ui/icons/Star';
 // Import Utils
 import { fetchProductById, addItemToCart, getCurrCartId, createCart, getCurrListId, createList, addItemToList, getCurrCustomerId, fetchCustomerShoppingLists, setCurrListId, setCurrListVersion, getCurrListVersion } from '../../utils/CommonUtils';
 import ReviewsRatings from '../common/ReviewsRatings.jsx';
+import RelatedProducts from './RelatedProducts.jsx';
+import NumberFormat from 'react-number-format';
+import { addToCartAction } from '../../actions/cartActions';
+import { connect } from 'react-redux';
 
 const styles = theme => ({
   paper: {
@@ -40,6 +45,13 @@ const styles = theme => ({
   },
   img: {
     maxWidth: 400
+  },
+  productGrid: {
+    width: "70%"
+  },
+  strikeThrough: {
+    textDecoration: "line-through",
+    color: "lightgray"
   }
 });
 
@@ -57,9 +69,15 @@ class ProductDetails extends React.Component {
     this.handleSelectList = this.handleSelectList.bind(this);
     this.fetchShoppingLists = this.fetchShoppingLists.bind(this);
     this.handleQtyChange = this.handleQtyChange.bind(this);
+    this.fetchProduct = this.fetchProduct.bind(this);
   }
 
   async componentDidMount() {
+    await this.fetchProduct();
+    await this.fetchShoppingLists();
+  }
+
+  async fetchProduct() {
     const { match: { params } } = this.props;
     let productId = params.productId;
     if (productId) {
@@ -79,7 +97,6 @@ class ProductDetails extends React.Component {
         // Display some error popup
       }
     }
-    await this.fetchShoppingLists();
   }
 
   handleChange = name => event => {
@@ -160,18 +177,8 @@ class ProductDetails extends React.Component {
   }
 
   async addToCart() {
-    let currCartId = getCurrCartId();
-    if (!currCartId) {
-      let response = await createCart();
-    }
-    currCartId = getCurrCartId();
-    if (currCartId) {
-      let { currSelectedSku, quantity } = this.state;
-      let response = await addItemToCart(currSelectedSku, quantity);
-      if (response.body) {
-        this.props.history.push("/cart");
-      }
-    }
+    let { currSelectedSku, quantity } = this.state;
+    this.props.addToCartAction(currSelectedSku, quantity)
   }
 
   handleDialogOpen() {
@@ -233,7 +240,9 @@ class ProductDetails extends React.Component {
   }
 
   render() {
-    const { classes } = this.props;
+    const { classes, location, match: { params } } = this.props;
+    let { productList } = location;
+    let productId = params.productId;
     let customerId = getCurrCustomerId();
     let thisVar = this;
     let currState = this.state;
@@ -245,14 +254,22 @@ class ProductDetails extends React.Component {
     let age = currState.age;
     let facetMapArr = currState.facetMapArr ? currState.facetMapArr : []
     let currProduct = currState.currProduct;
+    if (currProduct && productId !== currProduct.id) {
+      this.fetchProduct();
+    }
     let currSelectedSku = currState.currSelectedSku;
+    console.log("currSelectedSku", currSelectedSku);
+    let skuPrice = currSelectedSku && currSelectedSku.prices[0];
+    let isDiscounted = skuPrice && skuPrice.discounted ? true : false;
+    let discountedPrice = isDiscounted ? skuPrice.discounted.value.centAmount / 100 : skuPrice && skuPrice.value.centAmount / 100;
+    let listPrice = skuPrice && skuPrice.value.centAmount / 100;
     let displayImage = currSelectedSku && currSelectedSku.images && currSelectedSku.images.length > 0 ? currSelectedSku.images[0].url : "assets/img/no-image.jpg";
     return (
       <main className={classes.main}>
         <CssBaseline />
         <Paper className={classes.paper}>
           {currProduct ? (
-            <Grid container spacing={24}>
+            <Grid container spacing={24} className={classes.productGrid}>
               <Grid item>
                 <ButtonBase className={classes.image}>
                   <img className={classes.img} alt="complex" src={displayImage} />
@@ -269,20 +286,24 @@ class ProductDetails extends React.Component {
                     </Typography>
                   </Grid>
                   <Grid item xs>
-                    <StarIcon color="primary"/>
-                    <StarIcon color="primary"/>
-                    <StarIcon color="primary"/>
-                    <StarIcon color="disabled"/>
-                    <StarIcon color="disabled"/>
+                    <StarIcon color="primary" />
+                    <StarIcon color="primary" />
+                    <StarIcon color="primary" />
+                    <StarIcon color="disabled" />
+                    <StarIcon color="disabled" />
+                    <Typography variant="h5" color="primary">
+                      {isDiscounted && <NumberFormat value={listPrice} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} className={classes.strikeThrough} />}
+                      &nbsp;<NumberFormat value={discountedPrice} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
+                    </Typography>
                     <Typography variant="body2" color="textSecondary">
                       Description
                     </Typography>
                     <Typography variant="body1" color="textSecondary">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Fusce nec tellus sed augue semper porta. Mauris massa. Vestibulum lacinia arcu eget nulla. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Curabitur sodales ligula in libero. 
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Fusce nec tellus sed augue semper porta. Mauris massa. Vestibulum lacinia arcu eget nulla. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Curabitur sodales ligula in libero.
                     </Typography>
                   </Grid>
-                  <Divider />  
-                  <Grid item xs>  
+                  <Divider />
+                  <Grid item xs>
                     <Typography variant="body2" variant="subtitle2">
                       Select variant options...
                     </Typography>
@@ -309,7 +330,7 @@ class ProductDetails extends React.Component {
                         </FormControl>
                       )
                     })}
-                  </Grid>  
+                  </Grid>
                   <Grid item xs>
                     <TextField
                       id="standard-number"
@@ -349,7 +370,8 @@ class ProductDetails extends React.Component {
           ) : (
               "Loading, please wait!"
             )}
-          <ReviewsRatings />  
+          <RelatedProducts productList={productList} productToNotShow={currProduct} parent={this} />
+          <ReviewsRatings />
           <Dialog open={isDialogOpen} onClose={this.handleDialogClose} aria-labelledby="form-dialog-title">
             <DialogTitle id="form-dialog-title">Create Shopping List</DialogTitle>
             <DialogContent>
@@ -415,4 +437,4 @@ ProductDetails.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(ProductDetails);
+export default withStyles(styles)(withRouter(connect(null, { addToCartAction })(ProductDetails)));

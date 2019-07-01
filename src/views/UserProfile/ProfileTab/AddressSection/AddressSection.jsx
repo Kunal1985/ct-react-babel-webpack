@@ -1,5 +1,5 @@
 import React from "react";
-import classNames from 'classnames';
+import { connect } from 'react-redux';
 // @material-ui/core components
 import withStyles from "@material-ui/core/styles/withStyles";
 import Modal from '@material-ui/core/Modal';
@@ -19,7 +19,8 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import Radio from '@material-ui/core/Radio';
 // Application Components
 import AddressSectionEdit from "./AddressSectionEdit.jsx";
-import { updateCustomer } from "../../../../utils/CommonUtils.js";
+// Importing redux-custom-actions
+import { updateUserAction } from '../../../../actions/userActions';
 
 function rand() {
   return Math.round(Math.random() * 20) - 10;
@@ -91,42 +92,13 @@ class AddressSection extends React.Component {
     this.setState({ modalOpen: false });
   }
 
-  async handleChangeDefault(name, event) {
-    const { address, currUser, parent } = this.props;
-    let checkedAction = event.target.checked;
-    if (!checkedAction) {
-      return;
-    }
-    console.log("handleChangeDefault", name);
-    let currParent = {};
-    if(parent.name === "AddressForm"){
-      currParent = parent.props.parent;
-    } else {
-      currParent = parent.props.parent.props.parent;
-    }
-    let requestBody = {
-      "version": currUser.version,
-      "actions": [{
-        "action": (name === 'shipping') ? "setDefaultShippingAddress" : "setDefaultBillingAddress",
-        "addressId": address.id
-      }]
-    }
-    let response = await updateCustomer(requestBody);
-    if (response.body) {
-      currParent.fetchCustomerDetails(response.body.id);
-    }
-    if (response.err) {
-      // Display some error popup
-    }
-  }
-
-  handleOpenDialog(){
+  handleOpenDialog() {
     const { address, currUser } = this.props;
-    if ((currUser.defaultShippingAddressId === address.id) || (currUser.defaultBillingAddressId === address.id)){
+    if ((currUser.defaultShippingAddressId === address.id) || (currUser.defaultBillingAddressId === address.id)) {
       this.setState({
         openDialog2: true
       })
-    } else{
+    } else {
       this.setState({
         openDialog: true
       })
@@ -140,10 +112,33 @@ class AddressSection extends React.Component {
     })
   }
 
+  async handleChangeDefault(name, event) {
+    const { address, currUser, parent } = this.props;
+    let checkedAction = event.target.checked;
+    if (!checkedAction) {
+      return;
+    }
+    console.log("handleChangeDefault", name);
+    let currParent = {};
+    if (parent.name === "AddressForm") {
+      currParent = parent.props.parent;
+    } else {
+      currParent = parent.props.parent.props.parent;
+    }
+    let requestBody = {
+      "version": currUser.version,
+      "actions": [{
+        "action": (name === 'shipping') ? "setDefaultShippingAddress" : "setDefaultBillingAddress",
+        "addressId": address.id
+      }]
+    }
+    this.props.updateUserAction(requestBody);
+  }
+
   async handleDeleteAddress() {
     const { address, currUser, parent } = this.props;
     let currParent = {};
-    if(parent.name === "AddressForm"){
+    if (parent.name === "AddressForm") {
       currParent = parent.props.parent;
     } else {
       currParent = parent.props.parent.props.parent;
@@ -155,12 +150,17 @@ class AddressSection extends React.Component {
         "addressId": address.id
       }]
     }
-    let response = await updateCustomer(requestBody);
-    if (response.body) {
-      currParent.fetchCustomerDetails(response.body.id);
+    this.props.updateUserAction(requestBody);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    let { userFromReducer, errorFromReducer, parent } = nextProps;
+    if (errorFromReducer) {
+      // Display some error popup.
+      return;
     }
-    if (response.err) {
-      // Display some error popup
+    if (userFromReducer.id) {
+      return;
     }
   }
 
@@ -295,4 +295,9 @@ class AddressSection extends React.Component {
   }
 }
 
-export default withStyles(styles)(AddressSection);
+const mapStatesToProps = state => ({
+  userFromReducer: state.user.currUser,
+  errorFromReducer: state.user.error
+})
+
+export default withStyles(styles)(connect(mapStatesToProps, { updateUserAction })(AddressSection));
