@@ -93,10 +93,6 @@ class MyOrdersTab extends React.Component {
     return this.fetchOrders({limit:10, offset:0, sort:"id asc"});
   }
 
-  componentDidUpdate(){
-    // console.log("MyOrdersTab: componentDidUpdate");
-  }
-
   handleRequestSort(event, property) {
     if(nonSortableRowIds.indexOf(property) !== -1){
       console.log("No Sort operation");

@@ -51,42 +51,7 @@ class Review extends React.Component {
       this.props.fetchCartById();
     }
   }
-  async componentDidUpdate() {
-    console.log("Review componentDidUpdate", this.props);
-    // let { cartFromReducer } = this.props;
-    // console.log("Cleared cart check", cartFromReducer);
-    // if (!cartFromReducer.id) {
-    //   return;
-    // }
-    // if (this.props.submit) {
-    //   this.props.submitOrderAction()
-    //   // let response = await submitOrder();
-    //   let { orderFromReducer, orderErrorFromReducer } = this.props
-    //   if (orderErrorFromReducer) {
-    //     // Display some error
-    //     return;
-    //   }
-    //   if (orderFromReducer.orderNumber) {
-    //     this.props.clearOldCartFromSession();
-    //     this.props.parent.handleFormSubmit();
-    //   }
-    //   // this.props.parent.handleFormSubmit();
-    // }
-  }
-
-  async componentDidMount() {
-    console.log("Review componentDidMount", this.props);
-    // let currCartId = getCurrCartId();
-    // if (currCartId) {
-    //   let cartResponse = await fetchCart(getCurrCartId());
-    //   if (cartResponse.body) {
-    //     this.setState({ currCart: cartResponse.body });
-    //   }
-    //   if (cartResponse.err) {
-    //     // Display some error modal
-    //   }
-    // }
-  }
+  
   render() {
     const { classes, cartFromReducer } = this.props;
     let grossTotal = 0;

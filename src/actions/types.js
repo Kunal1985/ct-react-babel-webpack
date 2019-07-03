@@ -6,6 +6,15 @@ export const REMOVE_FROM_CART = 'REMOVE_FROM_CART';
 export const ADD_SHIPPING_TO_CART = 'ADD_SHIPPING_TO_CART';
 export const CLEAR_OLD_CART = 'CLEAR_OLD_CART';
 
+// Shopping-List Action Types
+export const FETCH_LIST_FROM_SESSION = 'FETCH_LIST_FROM_SESSION';
+export const FETCH_LIST_BY_ID = 'FETCH_LIST_BY_ID';
+export const CREATE_LIST = 'CREATE_LIST';
+export const ADD_TO_LIST = 'ADD_TO_LIST';
+export const REMOVE_FROM_LIST = 'REMOVE_FROM_LIST';
+export const CLEAR_OLD_LIST = 'CLEAR_OLD_LIST';
+export const FETCH_USER_SHOPPING_LISTS = 'FETCH_USER_SHOPPING_LISTS';
+
 // Order Action Types
 export const SUBMIT_ORDER = 'SUBMIT_ORDER';
 export const CLEAR_LAST_ORDER = 'CLEAR_LAST_ORDER';

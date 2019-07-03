@@ -93,13 +93,13 @@ class RelatedProducts extends React.Component {
 										<Typography>
 											Retail Price:
 										</Typography>
-                        {lowerPrice === higherPrice ? (
-												<NumberFormat value={lowerPrice} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
-											) : (
-													<div>
-														<NumberFormat value={lowerPrice} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} /> to <NumberFormat value={higherPrice} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
-													</div>
-												)}
+										{lowerPrice === higherPrice ? (
+											<NumberFormat value={lowerPrice} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
+										) : (
+												<div>
+													<NumberFormat value={lowerPrice} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} /> to <NumberFormat value={higherPrice} decimalScale={2} fixedDecimalScale={true} displayType={'text'} prefix={'$'} />
+												</div>
+											)}
 									</CardContent>
 									<CardActions>
 										<Button variant="contained" size="small" color="primary" className={classes.button} onClick={() => thisVar.props.history.replace({ pathname: '/product/' + currProduct.id, productList })}>

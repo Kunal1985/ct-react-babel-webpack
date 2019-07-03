@@ -68,7 +68,6 @@ class ShoppingListView extends React.Component {
   }
 
   async removeItem(itemId) {
-    console.log("remove item from list", itemId);
     let { parent } = this.props;
     let { currList } = this.state;
     let response = await removeItemFromList(currList.id, currList.version, itemId);

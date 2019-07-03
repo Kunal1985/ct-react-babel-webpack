@@ -99,10 +99,6 @@ class ShoppingCart extends React.Component {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
-    //
-  }
-
   async removeItem(itemId) {
     this.props.removeItemFromCartAction(itemId)
   }

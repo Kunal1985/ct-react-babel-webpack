@@ -91,10 +91,6 @@ class UserProfile extends React.Component {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
-    console.log("UserProfile: componentWillReceiveProps")
-  }
-
   handleChange(event, newValue) {
     this.setState({
       value: newValue

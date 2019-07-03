@@ -27,7 +27,6 @@ function rand() {
 }
 
 function getModalStyle() {
-  console.log("getModalStyle")
   const top = 50 + rand();
   const left = 50 + rand();
 
@@ -118,7 +117,6 @@ class AddressSection extends React.Component {
     if (!checkedAction) {
       return;
     }
-    console.log("handleChangeDefault", name);
     let currParent = {};
     if (parent.name === "AddressForm") {
       currParent = parent.props.parent;

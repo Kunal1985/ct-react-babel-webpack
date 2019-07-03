@@ -172,8 +172,6 @@ class Home extends React.Component {
       pathname: 'catalog',
       selectedCategory: categoryId
     })
-    // let shouldOpen = newValue === 0 ? false : true;
-    // this.setState({ value: newValue, anchorEl: document.getElementById("appBar"), open: shouldOpen });
   }
 
   mouseOverAction(event, newValue) {

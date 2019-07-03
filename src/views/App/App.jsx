@@ -1,23 +1,22 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Provider } from 'react-redux';
 import { withStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
+import { Provider } from 'react-redux';
+import store from '../../store';
+// Importing @material-ui/core components
 import AppBar from '@material-ui/core/AppBar';
 import Button from '@material-ui/core/Button';
-import Grid from '@material-ui/core/Grid';
 import Fade from '@material-ui/core/Fade';
-import Paper from '@material-ui/core/Paper';
 import Popper from '@material-ui/core/Popper';
-import Footer from 'views/Footer/Footer.jsx';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
+// Importing application-view components
+import Footer from 'views/Footer/Footer.jsx';
 import MiniShoppingCart from '../ShoppingCart/MiniShoppingCart.jsx';
-import NumberFormat from 'react-number-format';
-import { invokeAuthAPI } from 'utils/CommonUtils.js'
-import { getCurrCustomerId, removeCurrCustomerId, getCurrCartId, fetchCart } from '../../utils/CommonUtils';
-import store from '../../store';
 import MiniCartTrigger from './MiniCartTrigger.jsx';
+import { invokeAuthAPI } from 'utils/CommonUtils.js'
+import { getCurrCustomerId, removeCurrCustomerId } from '../../utils/CommonUtils';
 
 const styles = theme => ({
   '@global': {
@@ -121,7 +120,7 @@ class App extends React.Component {
           <div className={classes.layout}>
             {this.props.children}
           </div>
-          <MiniCartTrigger parent={this}/>
+          <MiniCartTrigger parent={this} />
           <Popper id="popperTest"
             open={open}
             anchorEl={anchorEl}

@@ -20,11 +20,12 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import Divider from '@material-ui/core/Divider';
 import StarIcon from '@material-ui/icons/Star';
 // Import Utils
-import { fetchProductById, addItemToCart, getCurrCartId, createCart, getCurrListId, createList, addItemToList, getCurrCustomerId, fetchCustomerShoppingLists, setCurrListId, setCurrListVersion, getCurrListVersion } from '../../utils/CommonUtils';
+import { fetchProductById, getCurrListId, createList, addItemToList, getCurrCustomerId, fetchCustomerShoppingLists, setCurrListId, setCurrListVersion, getCurrListVersion } from '../../utils/CommonUtils';
 import ReviewsRatings from '../common/ReviewsRatings.jsx';
 import RelatedProducts from './RelatedProducts.jsx';
 import NumberFormat from 'react-number-format';
 import { addToCartAction } from '../../actions/cartActions';
+import { fetchUserShoppingListsAction, createListAction, addToListAction } from '../../actions/listActions';
 import { connect } from 'react-redux';
 
 const styles = theme => ({
@@ -67,14 +68,32 @@ class ProductDetails extends React.Component {
     this.handleNameChange = this.handleNameChange.bind(this);
     this.handleCreateList = this.handleCreateList.bind(this);
     this.handleSelectList = this.handleSelectList.bind(this);
-    this.fetchShoppingLists = this.fetchShoppingLists.bind(this);
     this.handleQtyChange = this.handleQtyChange.bind(this);
     this.fetchProduct = this.fetchProduct.bind(this);
   }
 
+  componentWillMount() {
+    this.props.fetchUserShoppingListsAction();
+  }
+
+  componentWillReceiveProps(nextProps) {
+    let { userListsFromReducer, currListFromReducer, updateUserListFromReducer } = nextProps;
+    if (currListFromReducer.errorFromReducer) {
+      // Display some error
+      return;
+    }
+    if (updateUserListFromReducer) {
+      nextProps.fetchUserShoppingListsAction();
+    } else{
+      let { isDialogOpen } = this.state;
+      if (currListFromReducer.id && isDialogOpen) {
+        this.setState({ isDialogOpen: false, selectedList: [currListFromReducer.id, currListFromReducer.version].join('---') })
+      }
+    }
+  }
+
   async componentDidMount() {
     await this.fetchProduct();
-    await this.fetchShoppingLists();
   }
 
   async fetchProduct() {
@@ -184,22 +203,15 @@ class ProductDetails extends React.Component {
     this.setState({ isDialogOpen: true });
   }
 
-  async addToList() {
-    let response = await addItemToList(this.state.currSelectedSku);
-    if (response.body) {
-      this.setState({ isDialogOpen: false })
+  async handleCreateList() {
+    let { listName } = this.state;
+    if (listName && listName !== "") {
+      this.props.createListAction(listName, this.state.currSelectedSku);
     }
   }
 
-  async handleCreateList() {
-    let listName = this.state.listName;
-    let response = await createList(listName);
-    if (response.body) {
-      this.fetchShoppingLists();
-    }
-    if (response.err) {
-      //Display some error popup.
-    }
+  async addToList() {
+    this.props.addToListAction(this.state.currSelectedSku);
   }
 
   handleNameChange(event) {
@@ -220,29 +232,19 @@ class ProductDetails extends React.Component {
     this.setState({ selectedList: selectedValue });
   }
 
-  async fetchShoppingLists() {
-    let customerId = getCurrCustomerId();
-    if (!customerId) {
-      return;
-    }
-    let response = await fetchCustomerShoppingLists(customerId);
-    if (response.body) {
-      this.setState({ shoppingLists: response.body.results });
-    }
-  }
-
   handleQtyChange(event) {
     this.setState({ quantity: event.target.value });
   }
 
   render() {
-    const { classes, location, match: { params } } = this.props;
+    const { classes, location, match: { params }, userListsFromReducer } = this.props;
+    let shoppingLists = userListsFromReducer && userListsFromReducer.results ? userListsFromReducer.results : [];
     let { productList } = location;
     let productId = params.productId;
     let customerId = getCurrCustomerId();
     let thisVar = this;
     let currState = this.state;
-    let { listName, isDialogOpen, selectedList, shoppingLists, quantity } = currState;
+    let { isDialogOpen, selectedList, quantity } = currState;
     let currListInStorage = getCurrListId();
     if (!selectedList && currListInStorage) {
       selectedList = [currListInStorage, getCurrListVersion()].join("---");
@@ -383,7 +385,7 @@ class ProductDetails extends React.Component {
                 onChange={this.handleNameChange}
               />
               <Button onClick={this.handleCreateList} color="primary" variant="contained" >
-                Create List
+                Create & Add to List
               </Button>
               <DialogContentText>
                 Select one of the below Shopping-Lists to proceed!
@@ -432,4 +434,12 @@ ProductDetails.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(withRouter(connect(null, { addToCartAction })(ProductDetails)));
+const mapStatesToProps = state => ({
+  currListFromReducer: state.list.currList,
+  errorFromReducer: state.list.error,
+  userListsFromReducer: state.list.currUserLists,
+  userListsErrorFromReducer: state.list.currUserListsError,
+  updateUserListFromReducer: state.list.updateUserList
+})
+
+export default withStyles(styles)(withRouter(connect(mapStatesToProps, { addToCartAction, createListAction, fetchUserShoppingListsAction, addToListAction })(ProductDetails)));

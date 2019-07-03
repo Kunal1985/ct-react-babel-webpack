@@ -42,7 +42,6 @@ class AddressSectionEdit extends React.Component {
   cancelSaveAddress() {
     let { parent } = this.props;
     parent.handleClose();
-    console.log("cancelSaveAddress");
   }
 
   async saveAddress() {

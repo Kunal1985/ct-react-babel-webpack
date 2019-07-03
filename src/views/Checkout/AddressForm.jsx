@@ -44,7 +44,6 @@ class AddressForm extends React.Component {
       if (cartErrorFromReducer) {
         // Display some error
       }
-      // this.props.parent.handleFormSubmit();
     }
   }
 
