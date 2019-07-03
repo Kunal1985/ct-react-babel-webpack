@@ -72,12 +72,10 @@ class Catalog extends React.Component {
   }
 
   componentWillMount(){
-    console.log("componentWillMount")
     this.refetch();
   }
 
   componentWillReceiveProps(nextProps){
-    console.log("componentWillReceiveProps")
     const { match: { params } } = nextProps;
     this.refetch(params.catalogId);
   }
