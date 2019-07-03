@@ -81,7 +81,7 @@ class Catalog extends React.Component {
   }
 
   async refetch(selectedCategory){
-    let pp = await this.fetchPP(selectedCategory);
+    let pp = await this.fetchPP(selectedCategory, [], []);
     let categories = await this.fetchCats();
     this.setState({
       pp: pp.body,
