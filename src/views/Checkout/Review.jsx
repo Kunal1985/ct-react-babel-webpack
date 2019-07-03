@@ -71,7 +71,7 @@ class Review extends React.Component {
     return (
       <React.Fragment>
         <Typography variant="h6" gutterBottom>
-          Order summary
+          Cart summary
         </Typography>
         <List disablePadding>
           {lineItems.map(currLineItem => (

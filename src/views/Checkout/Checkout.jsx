@@ -175,9 +175,10 @@ class Checkout extends React.Component {
   }
 
   render() {
-    const { classes, userFromReducer, userErrorFromReducer, cartFromReducer, cartErrorFromReducer, orderFromReducer } = this.props;
+    const { classes, userFromReducer, cartFromReducer, orderFromReducer } = this.props;
+    console.log(orderFromReducer, cartFromReducer)
     const { activeStep, selectedAddress } = this.state;
-    let currCart = cartFromReducer ? cartFromReducer : orderFromReducer;
+    let currCart = cartFromReducer.id ? cartFromReducer : orderFromReducer;
     let currUser = userFromReducer;
     let currOrderNumber = orderFromReducer.orderNumber;
     let noAddress = (currUser && currUser.addresses && currUser.addresses.length === 0) ? true : false;

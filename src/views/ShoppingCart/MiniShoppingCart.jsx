@@ -123,14 +123,15 @@ class MiniShoppingCart extends React.Component {
 
   render() {
     const { classes, miniCart, cartFromReducer } = this.props;
+    let currCartFromProps = this.props.currCart;
     let thisVar = this;
     let grossTotal = 0;
     let subTotal = 0;
     let taxAmount = 0;
     let currCartId = "";
-    let currCart = cartFromReducer;
+    let currCart = cartFromReducer.id ? cartFromReducer: currCartFromProps ? currCartFromProps : {};
     if (currCart.id) {
-      currCartId = currCart.id
+      currCartId = currCart.type === "Order" ? currCart.orderNumber : currCart.id;
       grossTotal = currCart.taxedPrice ? currCart.taxedPrice.totalGross.centAmount / 100 : currCart.totalPrice.centAmount / 100;
       subTotal = currCart.taxedPrice ? currCart.taxedPrice.totalNet.centAmount / 100 : grossTotal;
       taxAmount = grossTotal - subTotal;
@@ -141,8 +142,8 @@ class MiniShoppingCart extends React.Component {
         <CssBaseline />
         <Card>
           <CardHeader color="primary">
-            <h4 className={classes.cardTitleWhite}>Order Summary</h4>
-            <p className={classes.cardCategoryWhite}>Order# {currCartId}</p>
+            <h4 className={classes.cardTitleWhite}>{currCart.type === "Order" ? "Order Summary" : "Shopping Cart"}</h4>
+            <p className={classes.cardCategoryWhite}>{currCart.type === "Order" ? "Order" : "Cart"}# {currCartId}</p>
           </CardHeader>
           <CardBody key={currCartId}>
             {emptyCart ? (

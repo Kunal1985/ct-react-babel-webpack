@@ -82,6 +82,7 @@ class ShoppingListView extends React.Component {
 
   render() {
     const { classes } = this.props;
+    let thisVar = this;
     let { currList } = this.state;
     let currListId = currList.id;
     let emptyCart = currList && currList.lineItems && currList.lineItems.length === 0;

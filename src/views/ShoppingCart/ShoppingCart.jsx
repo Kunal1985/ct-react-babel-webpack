@@ -130,7 +130,7 @@ class ShoppingCart extends React.Component {
           <Card>
             <CardHeader color="primary">
               <h4 className={classes.cardTitleWhite}>Shopping Cart</h4>
-              <p className={classes.cardCategoryWhite}>Order# {currCartId}</p>
+              <p className={classes.cardCategoryWhite}>Cart# {currCartId}</p>
             </CardHeader>
             <CardBody key={currCartId}>
               {emptyCart ? (
