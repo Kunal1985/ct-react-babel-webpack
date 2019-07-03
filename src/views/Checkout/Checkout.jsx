@@ -176,7 +176,6 @@ class Checkout extends React.Component {
 
   render() {
     const { classes, userFromReducer, cartFromReducer, orderFromReducer } = this.props;
-    console.log(orderFromReducer, cartFromReducer)
     const { activeStep, selectedAddress } = this.state;
     let currCart = cartFromReducer.id ? cartFromReducer : orderFromReducer;
     let currUser = userFromReducer;
