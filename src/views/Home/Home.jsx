@@ -169,8 +169,7 @@ class Home extends React.Component {
   handleChange(event, newValue) {
     let categoryId = this.state.categories[newValue - 1].id;
     this.props.history.push({
-      pathname: 'catalog',
-      selectedCategory: categoryId
+      pathname: `catalog/${categoryId}`
     })
   }
 
@@ -257,8 +256,7 @@ class Home extends React.Component {
                   actionIcon={
                     <Button variant="contained" size="small" color="primary" className={classes.button}
                       onClick={() => this.props.history.push({
-                        pathname: 'catalog',
-                        selectedCategory: tile.categoryId
+                        pathname: `catalog/${tile.categoryId}`
                       })}>
                       View Collection
                     </Button>

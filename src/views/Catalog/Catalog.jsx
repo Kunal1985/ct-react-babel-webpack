@@ -60,18 +60,30 @@ const styles = theme => ({
 
 class Catalog extends React.Component {
   constructor(props) {
-    const { location } = props;
+    const { location, match: { params } } = props;
     super(props);
     this.state = {
       open: true,
-      selectedCategory: location.selectedCategory
+      selectedCategory: params.catalogId
     };
     this.handleClick = this.handleClick.bind(this);
     this.handleColorFacetSelection = this.handleColorFacetSelection.bind(this);
+    this.refetch = this.refetch.bind(this);
   }
 
-  async componentDidMount(){
-    let pp = await this.fetchPP();
+  componentWillMount(){
+    console.log("componentWillMount")
+    this.refetch();
+  }
+
+  componentWillReceiveProps(nextProps){
+    console.log("componentWillReceiveProps")
+    const { match: { params } } = nextProps;
+    this.refetch(params.catalogId);
+  }
+
+  async refetch(selectedCategory){
+    let pp = await this.fetchPP(selectedCategory);
     let categories = await this.fetchCats();
     this.setState({
       pp: pp.body,
@@ -81,8 +93,9 @@ class Catalog extends React.Component {
     })    
   }
 
-  async fetchPP(selectedCategory, selectedColorFacets, selectedSizeFacets){
-    let categoryId = selectedCategory ? selectedCategory : this.state.selectedCategory;
+  async fetchPP(selectedCategory, selectedColorFacets, selectedSizeFacets){    
+    const { match: { params } } = this.props;
+    let categoryId = selectedCategory ? selectedCategory : params.catalogId;
     let query = "";
     if(categoryId){
       let queryTxt = categoryId ? `categories.id:subtree("${categoryId}")` : null
@@ -130,14 +143,6 @@ class Catalog extends React.Component {
     return response;
   }
 
-  async handleCategorySelection(termSelected){
-    this.setState({
-      selectedCategory: termSelected
-    });
-    let pp = await this.fetchPP(termSelected);
-    this.setState({ pp: pp.body });
-  }
-
   async handleColorFacetSelection(termSelected){
     let colorFacets = this.state.colorFacets ? this.state.colorFacets : [];
     let index = colorFacets.indexOf(termSelected);
@@ -175,9 +180,9 @@ class Catalog extends React.Component {
 
   render() {
     let thisVar = this;
-    const { classes } = this.props;
+    const { classes, match: { params } } = this.props;
     let thisState = this.state;
-    let selectedCategory = thisState.selectedCategory;
+    let selectedCategory = params.catalogId;
     let pp = thisState.pp;
     let productList = pp && pp.results;
     let facetsArr = pp && pp.facets;
@@ -240,7 +245,7 @@ class Catalog extends React.Component {
               className={classes.root}
             >
               {categories.map( category => (
-                <ListItem button className={classes.nested} key={category.id} onClick={() => this.handleCategorySelection(category.id)}>
+                <ListItem button className={classes.nested} key={category.id} onClick={() => thisVar.props.history.replace({pathname: `${category.id}`})}>
                   <Typography variant="subtitle2" color={category.selected ? "primary" : "textPrimary"} component="h6">
                     {category.name.en} ({category.count})
                   </Typography>

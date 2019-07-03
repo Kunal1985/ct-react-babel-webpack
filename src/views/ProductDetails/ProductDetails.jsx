@@ -42,7 +42,7 @@ const styles = theme => ({
   formControl: {
     marginTop: theme.spacing.unit * 2,
     marginRight: theme.spacing.unit * 2,
-    width: "30%"
+    width: "100%"
   },
   img: {
     maxWidth: 400
@@ -53,6 +53,12 @@ const styles = theme => ({
   strikeThrough: {
     textDecoration: "line-through",
     color: "lightgray"
+  },
+  paddingTop: {
+    paddingTop: theme.spacing.unit * 2
+  },
+  cancelBtn: {
+    float: "left"
   }
 });
 
@@ -84,7 +90,7 @@ class ProductDetails extends React.Component {
     }
     if (updateUserListFromReducer) {
       nextProps.fetchUserShoppingListsAction();
-    } else{
+    } else {
       let { isDialogOpen } = this.state;
       if (currListFromReducer.id && isDialogOpen) {
         this.setState({ isDialogOpen: false, selectedList: [currListFromReducer.id, currListFromReducer.version].join('---') })
@@ -372,56 +378,75 @@ class ProductDetails extends React.Component {
           <Dialog open={isDialogOpen} onClose={this.handleDialogClose} aria-labelledby="form-dialog-title">
             <DialogTitle id="form-dialog-title">Create Shopping List</DialogTitle>
             <DialogContent>
-              <DialogContentText>
-                Please enter the name to create a new Shopping-List!
-              </DialogContentText>
-              <TextField
-                autoFocus
-                margin="dense"
-                id="name"
-                label="Shipping List Name"
-                type="text"
-                fullWidth
-                onChange={this.handleNameChange}
-              />
-              <Button onClick={this.handleCreateList} color="primary" variant="contained" >
-                Create & Add to List
-              </Button>
-              <DialogContentText>
-                Select one of the below Shopping-Lists to proceed!
-              </DialogContentText>
-              <FormControl className={classes.formControl} key="listsControl">
-                <InputLabel htmlFor="age-native-simple">Shopping-Lists</InputLabel>
-                <Select
-                  native
-                  value={selectedList}
-                  onChange={() => this.handleSelectList(event)}
-                  inputProps={{
-                    name: 'shopping-lists',
-                    id: 'age-native-simple',
-                  }}
-                >
-                  {shoppingLists.map(function (list) {
-                    return (
-                      <option value={[list.id, list.version].join("---")} key={list.id}>{list.name.en}</option>
-                    )
-                  })}
-                </Select>
-              </FormControl>
+              <Grid container spacing={24} direction="column">
+                <Grid item className={classes.paddingTop}>
+                  <Grid item container className={classes.paddingTop}>
+                    <DialogContentText>
+                      Please enter the name to create a new Shopping-List!
+                    </DialogContentText>
+                    <TextField
+                      autoFocus
+                      margin="dense"
+                      id="name"
+                      label="Shipping List Name"
+                      type="text"
+                      fullWidth
+                      onChange={this.handleNameChange}
+                    />
+                  </Grid>
+                  <Grid item container className={classes.paddingTop} justify="center">
+                    <Button onClick={this.handleCreateList} color="primary" variant="contained" >
+                      Create & Add to List
+                    </Button>
+                  </Grid>
+                </Grid>
+                <Grid item container className={classes.paddingTop} justify="center" direction="row">
+                  <Typography variant="h5" gutterBottom>
+                    OR
+                  </Typography>
+                </Grid>
+                <Grid item className={classes.paddingTop}>
+                  <Grid item container className={classes.paddingTop}>
+                    <DialogContentText>
+                      Select one of the below Shopping-Lists to proceed!
+                    </DialogContentText>
+                    <FormControl className={classes.formControl} key="listsControl">
+                      <InputLabel htmlFor="age-native-simple">Shopping-Lists</InputLabel>
+                      <Select
+                        native
+                        value={selectedList}
+                        onChange={() => this.handleSelectList(event)}
+                        inputProps={{
+                          name: 'shopping-lists',
+                          id: 'age-native-simple',
+                        }}
+                      >
+                        {shoppingLists.map(function (list) {
+                          return (
+                            <option value={[list.id, list.version].join("---")} key={list.id}>{list.name.en}</option>
+                          )
+                        })}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item container className={classes.paddingTop} justify="center">
+                    {selectedList ? (
+                      <Button onClick={this.addToList} color="primary" variant="contained" >
+                        Add to List
+                    </Button>
+                    ) : (
+                        <Button color="primary" variant="contained" disabled>
+                          Add to List
+                      </Button>
+                      )}
+                  </Grid>
+                </Grid>
+              </Grid>
             </DialogContent>
             <DialogActions>
-              <Button onClick={this.handleDialogClose} color="secondary" variant="contained">
+              <Button onClick={this.handleDialogClose} color="secondary" variant="contained" className={classes.cancelBtn}>
                 Cancel
               </Button>
-              {selectedList ? (
-                <Button onClick={this.addToList} color="primary" variant="contained" >
-                  Add to List
-                </Button>
-              ) : (
-                  <Button color="primary" variant="contained" disabled>
-                    Add to List
-                </Button>
-                )}
             </DialogActions>
           </Dialog>
         </Paper>

@@ -201,6 +201,7 @@ class MyShoppingListsTab extends React.Component {
     const { classes } = this.props;
     const emptyRows = 0;
     let { order, orderBy, page, rowsPerPage, myShoppingLists, modalOpen, listInModal, openDialog } = this.state;
+    console.log(myShoppingLists)
     let rows = myShoppingLists && myShoppingLists.results ? myShoppingLists.results: [];
     let rowsLength = rows && rows.length ? rows.length : 0;
     let pageSizeArr = (rowsLength <= 5) ? [5] : (rowsLength <= 10) ? [5, 10] : [5, 10, 25];

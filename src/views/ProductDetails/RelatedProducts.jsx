@@ -102,7 +102,7 @@ class RelatedProducts extends React.Component {
 											)}
 									</CardContent>
 									<CardActions>
-										<Button variant="contained" size="small" color="primary" className={classes.button} onClick={() => thisVar.props.history.replace({ pathname: '/product/' + currProduct.id, productList })}>
+										<Button variant="contained" size="small" color="primary" className={classes.button} onClick={() => thisVar.props.history.replace({ pathname: `/product/${currProduct.id}`, productList })}>
 											Product Details
                       </Button>
 									</CardActions>

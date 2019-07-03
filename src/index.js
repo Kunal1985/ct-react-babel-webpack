@@ -21,7 +21,7 @@ ReactDOM.render(
     <App>
       <Switch>
         <Route exact path="/" component={Home} />
-        <Route path="/catalog" component={Catalog} />
+        <Route path="/catalog/:catalogId" component={Catalog} />
         <Route path="/product/:productId" component={ProductDetails} />
         <Route path="/login" component={Login} />
         <Route path="/user" component={UserProfile} />
