@@ -26,6 +26,8 @@ import RelatedProducts from './RelatedProducts.jsx';
 import NumberFormat from 'react-number-format';
 import { addToCartAction } from '../../actions/cartActions';
 import { fetchUserShoppingListsAction, createListAction, addToListAction } from '../../actions/listActions';
+import {fetchRecentlyViewedFromSessionAction, fetchRecentlyViewedByIdsAction, updateRecentlyViewedAction} from '../../actions/recentlyViewedActions';
+
 import { connect } from 'react-redux';
 
 const styles = theme => ({
@@ -80,10 +82,20 @@ class ProductDetails extends React.Component {
 
   componentWillMount() {
     this.props.fetchUserShoppingListsAction();
+    this.props.fetchRecentlyViewedFromSessionAction();
   }
 
   componentWillReceiveProps(nextProps) {
-    let { userListsFromReducer, currListFromReducer, updateUserListFromReducer } = nextProps;
+    let { match: { params }, recentlyViewedIds, recentlyViewedItems, currListFromReducer, updateUserListFromReducer } = nextProps;
+    let productId = params.productId;
+    if(recentlyViewedIds.indexOf(productId) === -1 || recentlyViewedIds.indexOf(productId) !== recentlyViewedIds.length-1){
+      nextProps.updateRecentlyViewedAction(productId, recentlyViewedItems);
+      return;
+    }
+    if(recentlyViewedItems.length !== recentlyViewedIds.length){
+     this.props.fetchRecentlyViewedByIdsAction(); 
+     return;
+    }
     if (currListFromReducer.errorFromReducer) {
       // Display some error
       return;
@@ -243,9 +255,9 @@ class ProductDetails extends React.Component {
   }
 
   render() {
-    const { classes, location, match: { params }, userListsFromReducer } = this.props;
+    const { classes, location, match: { params }, userListsFromReducer, recentlyViewedItems } = this.props;
     let shoppingLists = userListsFromReducer && userListsFromReducer.results ? userListsFromReducer.results : [];
-    let { productList } = location;
+    let productList = recentlyViewedItems;
     let productId = params.productId;
     let customerId = getCurrCustomerId();
     let thisVar = this;
@@ -464,7 +476,16 @@ const mapStatesToProps = state => ({
   errorFromReducer: state.list.error,
   userListsFromReducer: state.list.currUserLists,
   userListsErrorFromReducer: state.list.currUserListsError,
-  updateUserListFromReducer: state.list.updateUserList
+  updateUserListFromReducer: state.list.updateUserList,
+  recentlyViewedIds: state.recentlyViewed.recentlyViewedIds,
+  recentlyViewedItems: state.recentlyViewed.recentlyViewedItems
 })
 
-export default withStyles(styles)(withRouter(connect(mapStatesToProps, { addToCartAction, createListAction, fetchUserShoppingListsAction, addToListAction })(ProductDetails)));
+export default withStyles(styles)(withRouter(connect(mapStatesToProps, { 
+  addToCartAction, 
+  createListAction, 
+  fetchUserShoppingListsAction, 
+  addToListAction,
+  fetchRecentlyViewedFromSessionAction,
+  fetchRecentlyViewedByIdsAction, 
+  updateRecentlyViewedAction })(ProductDetails)));

@@ -103,6 +103,30 @@ let generateOrderNumber = function () {
   return "ORD" + Math.floor(Math.random() * 900000) + 100000;
 }
 
+let getRecentlyViewedIds = function(){
+  let recentlyViewed = localStorage.getItem('recentlyViewed');
+  if(!recentlyViewed)
+    return [];
+  return recentlyViewed.split(',');
+}
+
+let updateRecentlyViewed = function(productId){
+  let recentlyViewedIds = getRecentlyViewedIds();
+  if(!recentlyViewedIds){
+    recentlyViewedIds = [];
+  }
+  let index = recentlyViewedIds.indexOf(productId);
+  if(index != -1){
+    recentlyViewedIds.splice(index, 1);
+  }
+  if(recentlyViewedIds.length >=6 ){
+    recentlyViewedIds.shift();  
+  }
+  recentlyViewedIds.push(productId);
+  localStorage.setItem('recentlyViewed', recentlyViewedIds.join(','));
+  return index;
+}
+
 let invokeAuthAPI = function () {
   let options = {
     method: "POST",
@@ -288,6 +312,29 @@ let fetchCustomerShoppingLists = function (customerId, queryParams) {
   return rp(options)
     .then(function (body) {
       return { body };
+    })
+    .catch(function (err) {
+      // Error Handling
+      return { err }
+    });
+}
+
+let fetchProductListById = function (idList) {
+  idList = idList.join(`","`);
+  let queryParam = ["where", encodeURIComponent(`id in ("${idList}")`)].join("=");
+  let apiUrl = `${API_BASE_URL}/products?${queryParam}`;
+  let options = {
+    method: "GET",
+    url: apiUrl,
+    headers: {
+      'Authorization': 'Bearer ' + getAuthToken(),
+      'Content-type': 'application/json'
+    },
+    json: true
+  }
+  return rp(options)
+    .then(function (body) {
+      return { body }
     })
     .catch(function (err) {
       // Error Handling
@@ -735,5 +782,8 @@ export {
   setCurrCartCustomer,
   removeItemFromList,
   fetchList,
-  removeList
+  removeList,
+  getRecentlyViewedIds,
+  updateRecentlyViewed,
+  fetchProductListById
 };
